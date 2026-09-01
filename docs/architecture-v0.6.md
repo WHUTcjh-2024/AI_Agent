@@ -1,8 +1,8 @@
-# AskU Architecture V0.5
+# AskU Architecture V0.6
 
 ## Goal
 
-V0.5 turns the existing phase modules into replaceable layers. The HTTP contract and product state remain stable while search, model, knowledge base, authentication and storage adapters can evolve independently.
+V0.6 adds the Phase 7 policy orchestrator and a first-class knowledge boundary. The HTTP contract and product state remain stable while routing, search, model, knowledge base, authentication and storage adapters evolve independently.
 
 ## System boundary
 
@@ -12,8 +12,10 @@ Mobile UI
                                          ↓
 Go API
   Handler → Run Coordinator → Agent Executor
-                              ├→ Router
-                              ├→ Searcher → Web Search Provider / future WeKnora
+                              ├→ Policy Router
+                              ├→ Knowledge Searcher → WeKnora Provider
+                              ├→ Web Searcher → Search Provider
+                              ├→ Answer Cache port (Phase 8 implementation)
                               └→ Generator → LLM Provider
 
 Infrastructure adapters
@@ -34,6 +36,7 @@ Only composition roots know concrete implementations:
 | `api` | HTTP validation, auth middleware, response/SSE wire format | SQL, provider logic, answer generation |
 | `run` | run lifecycle, event persistence/publication, cancellation | routing, search, LLM selection |
 | `agent` | capability composition and product progress | HTTP, database schema, SSE transport |
+| `knowledge` | school-scoped knowledge search and WeKnora protocol mapping | routing, sessions, SSE or SQL |
 | `llm` | normalized generation port, provider adapters, usage accounting | sessions or UI events |
 | `websearch` | official-domain search/fetch/extract/cache pipeline | run lifecycle or message persistence |
 | `store` | PostgreSQL implementation and transaction boundaries | product routing |
@@ -60,7 +63,7 @@ Consumer modules define the ports they need. Infrastructure implements those por
 
 ### Add a real knowledge base
 
-Implement an `agent` retrieval capability or a `Searcher` adapter around WeKnora, register it in the backend composition root, and keep `run.Service`, handlers and mobile unchanged.
+Set each school's `official_knowledge_base_id`, configure `ASKU_KNOWLEDGE_PROVIDER=weknora`, and inject the WeKnora URL and scoped API key. To use another engine, implement `knowledge.Provider`; `run.Service`, handlers and mobile remain unchanged.
 
 ### Add an LLM provider
 
@@ -98,7 +101,7 @@ npm run export:ios
 ## Deliberate limits
 
 - No Kubernetes, message broker, distributed workflow engine or microservice split.
-- No real WeKnora, crawler or WeChat credentials in this repository yet.
+- The WeKnora REST adapter is implemented, but no deployment, API key or school knowledge-base id is committed.
 - AsyncStorage is acceptable for internal demo tokens; production should use a secure TokenStore adapter.
 - Provider selection remains startup configuration, which is appropriate for the current single-school validation stage.
 - Development login is disabled by default and must be explicitly enabled by a local test environment.

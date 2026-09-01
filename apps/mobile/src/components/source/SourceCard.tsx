@@ -20,7 +20,7 @@ export function SourceCard({ source, onPress }: { source: Source; onPress: () =>
           {source.official ? <Text style={styles.badge}>官方</Text> : null}
         </View>
         <Text numberOfLines={2} style={styles.title}>{source.title}</Text>
-        <Text style={styles.meta}>{formatPublishedDate(source.publishedAt)} · 查看原文</Text>
+        <Text style={styles.meta}>{formatPublishedDate(source.publishedAt)} · {source.url ? '查看原文' : '来源详情'}</Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
     </Pressable>

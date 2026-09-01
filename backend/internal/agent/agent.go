@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"asku/backend/internal/domain"
+	"asku/backend/internal/knowledge"
 	"asku/backend/internal/llm"
 	"asku/backend/internal/websearch"
 )
@@ -16,6 +17,7 @@ type Plan struct {
 	Chunks     []string
 	Fail       bool
 	Generation *llm.Request
+	Knowledge  *knowledge.Request
 	Search     *websearch.Request
 	Route      string
 	Reason     string

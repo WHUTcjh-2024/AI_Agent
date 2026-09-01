@@ -53,3 +53,19 @@ func (r *Registry) AllowedDomains(id string) ([]string, error) {
 	}
 	return append([]string(nil), context.AllowedDomains...), nil
 }
+
+func (r *Registry) OfficialKnowledgeBaseID(id string) (string, error) {
+	context, ok := r.Get(id)
+	if !ok {
+		return "", fmt.Errorf("unknown school %q", id)
+	}
+	return context.OfficialKnowledgeBaseID, nil
+}
+
+func (r *Registry) SchoolName(id string) (string, error) {
+	context, ok := r.Get(id)
+	if !ok {
+		return "", fmt.Errorf("unknown school %q", id)
+	}
+	return context.Name, nil
+}

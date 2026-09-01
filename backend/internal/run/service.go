@@ -130,6 +130,17 @@ func (p *executionProgress) RetrievalStarted(ctx context.Context, engine string)
 	return p.service.emit(ctx, p.runID, "retrieval.started", map[string]any{"engine": engine})
 }
 
+func (p *executionProgress) RetrievalCompleted(ctx context.Context, engine string, hits int, metadata map[string]any) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	payload := map[string]any{"engine": engine, "hits": hits}
+	for key, value := range metadata {
+		payload[key] = value
+	}
+	return p.service.emit(ctx, p.runID, "retrieval.completed", payload)
+}
+
 func (p *executionProgress) SourcesUpdated(ctx context.Context, sources []domain.Source, metadata map[string]any) error {
 	if !p.service.pause(ctx, 360*time.Millisecond) {
 		return ctx.Err()

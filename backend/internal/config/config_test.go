@@ -29,11 +29,30 @@ func TestLoadMockProviderDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.LLMProvider != "mock" || cfg.LLMModel == "" {
+	if cfg.LLMProvider != "mock" || cfg.LLMModel == "" || cfg.AgentMode != "policy" || cfg.KnowledgeProvider != "disabled" {
 		t.Fatalf("unexpected mock defaults: %#v", cfg)
 	}
 	if cfg.DevAuthEnabled {
 		t.Fatal("development login must be disabled by default")
+	}
+}
+
+func TestLoadRejectsIncompleteWeKnoraConfiguration(t *testing.T) {
+	t.Setenv("ASKU_LLM_PROVIDER", "mock")
+	t.Setenv("ASKU_KNOWLEDGE_PROVIDER", "weknora")
+	t.Setenv("ASKU_WEKNORA_BASE_URL", "")
+	t.Setenv("ASKU_WEKNORA_API_KEY", "")
+	if _, err := Load(); err == nil {
+		t.Fatal("incomplete WeKnora configuration must fail at startup")
+	}
+}
+
+func TestLoadRejectsInvalidKnowledgeTopN(t *testing.T) {
+	t.Setenv("ASKU_LLM_PROVIDER", "mock")
+	t.Setenv("ASKU_KNOWLEDGE_PROVIDER", "disabled")
+	t.Setenv("ASKU_KNOWLEDGE_TOP_N", "11")
+	if _, err := Load(); err == nil {
+		t.Fatal("invalid knowledge Top-N must fail at startup")
 	}
 }
 

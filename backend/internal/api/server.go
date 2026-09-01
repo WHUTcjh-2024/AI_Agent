@@ -35,6 +35,7 @@ type RuntimeInfo struct {
 	AgentMode         string
 	LLMProvider       string
 	WebSearchProvider string
+	KnowledgeProvider string
 }
 
 func New(database Repository, redisCache Cache, authService Authenticator, runService RunController, hub EventHub, schools SchoolRegistry, devAuthEnabled bool, allowedOrigins []string, runtime RuntimeInfo) *Server {
@@ -107,7 +108,9 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"status":  map[bool]string{true: "ok", false: "degraded"}[status == http.StatusOK],
 		"service": "asku-api", "version": s.runtime.Version, "postgres": postgresStatus, "redis": redisStatus,
 		"school": s.schools.Current(), "agentMode": s.runtime.AgentMode,
-		"providers": map[string]string{"llm": s.runtime.LLMProvider, "webSearch": s.runtime.WebSearchProvider},
+		"providers": map[string]string{
+			"llm": s.runtime.LLMProvider, "webSearch": s.runtime.WebSearchProvider, "knowledge": s.runtime.KnowledgeProvider,
+		},
 	})
 }
 

@@ -1,10 +1,11 @@
-# AskU Backend V0.5
+# AskU Backend V0.6
 
-当前后端采用 Handler → Run Coordinator → Agent Executor → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis、AgentRun、可重连 SSE、模型/搜索 Provider、用量记录和官方域名内的 Top-N 页面抓取。
+当前后端采用 Handler → Run Coordinator → Agent Orchestrator → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis、AgentRun、可重连 SSE、Policy Router、WeKnora Knowledge Adapter、模型/搜索 Provider 和用量记录。
 
 ## 当前边界
 
-- `ASKU_AGENT_MODE=mock` 是受控路由 Adapter；`ASKU_LLM_PROVIDER=mock` 是默认模型 Adapter。两者均不代表 WeKnora 或真实校园政策已接入。
+- `ASKU_AGENT_MODE=policy` 是默认正式路由；`mock` 仅保留开发场景。稳定校园问题优先知识库，时效问题进入官方网页搜索。
+- `ASKU_KNOWLEDGE_PROVIDER=disabled` 是安全默认值：没有知识库时明确返回无可靠来源，不提供假检索结果。
 - `openai-compatible` Provider 可通过环境变量接入兼容 `/chat/completions` 的 API；Base URL、Key、Model 均不写入代码或日志。
 - `/v1/auth/wechat` 保留正式接口，但没有 AppID/签名时返回 `wechat_not_configured`。
 - `SchoolContext` 从 `config/schools/whut.yaml` 加载，业务 Handler 不写死学校域名和知识库 ID。
@@ -70,6 +71,20 @@ ASKU_LLM_OUTPUT_RMB_PER_MTOK=<output price>
 
 输入 `官网搜索测试` 可走完整搜索联调链路。详细边界、配置和测试见 `docs/phase-6-web-search-gateway.md`。
 
+## WeKnora Knowledge Adapter
+
+Adapter 使用 WeKnora 官方 `POST /api/v1/knowledge-search`，并通过 `X-API-Key` 认证。启用前需要同时配置：
+
+```text
+ASKU_KNOWLEDGE_PROVIDER=weknora
+ASKU_WEKNORA_BASE_URL=http://weknora.example:8080
+ASKU_WEKNORA_API_KEY=<scoped-api-key>
+ASKU_WEKNORA_TIMEOUT=12s
+ASKU_KNOWLEDGE_TOP_N=4
+```
+
+每所学校的知识库 ID 只写在 `config/schools/<school>.yaml` 的 `official_knowledge_base_id`，不得写入 Router、Handler 或 Provider。详细说明见 `docs/phase-7-agent-orchestrator.md`。
+
 ## 测试命令
 
 ```powershell
@@ -78,4 +93,4 @@ go vet ./...
 go test -race ./...
 ```
 
-架构边界和扩展方式见 `../docs/architecture-v0.5.md`。
+架构边界和扩展方式见 `../docs/architecture-v0.6.md`。

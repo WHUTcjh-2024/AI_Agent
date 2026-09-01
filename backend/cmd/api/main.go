@@ -15,6 +15,7 @@ import (
 	"asku/backend/internal/auth"
 	"asku/backend/internal/cache"
 	"asku/backend/internal/config"
+	"asku/backend/internal/knowledge"
 	"asku/backend/internal/llm"
 	"asku/backend/internal/run"
 	"asku/backend/internal/school"
@@ -22,7 +23,7 @@ import (
 	"asku/backend/internal/websearch"
 )
 
-const version = "0.5.0"
+const version = "0.6.0"
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
@@ -109,14 +110,47 @@ func main() {
 		logger.Error("configure web search gateway", "error", err)
 		os.Exit(1)
 	}
-	agentExecutor, err := agent.NewOrchestrator(agent.NewMockRouter(), llmGateway, searchGateway, cfg.WebSearchTopN)
+	var knowledgeSearcher knowledge.Searcher
+	switch cfg.KnowledgeProvider {
+	case "disabled":
+		knowledgeSearcher = knowledge.NewDisabledSearcher()
+	case "weknora":
+		if schools.Current().OfficialKnowledgeBaseID == "" {
+			logger.Error("configure knowledge provider", "provider", cfg.KnowledgeProvider, "error", "current school has no official_knowledge_base_id")
+			os.Exit(1)
+		}
+		provider, providerErr := knowledge.NewWeKnoraProvider(
+			cfg.WeKnoraBaseURL, cfg.WeKnoraAPIKey, &http.Client{Timeout: cfg.WeKnoraTimeout},
+		)
+		if providerErr != nil {
+			logger.Error("configure knowledge provider", "provider", cfg.KnowledgeProvider, "error", providerErr)
+			os.Exit(1)
+		}
+		knowledgeSearcher, err = knowledge.NewGateway(provider, schools)
+		if err != nil {
+			logger.Error("configure knowledge gateway", "error", err)
+			os.Exit(1)
+		}
+	}
+	var agentRouter agent.Router
+	switch cfg.AgentMode {
+	case "mock":
+		agentRouter = agent.NewMockRouter()
+	case "policy":
+		agentRouter = agent.NewPolicyRouter()
+	}
+	agentExecutor, err := agent.NewOrchestrator(agentRouter, agent.Capabilities{
+		Generator: llmGateway, Knowledge: knowledgeSearcher, WebSearch: searchGateway,
+		SearchTopN: cfg.WebSearchTopN, KnowledgeTopN: cfg.KnowledgeTopN,
+	})
 	if err != nil {
 		logger.Error("configure agent orchestrator", "error", err)
 		os.Exit(1)
 	}
 	runService := run.NewService(database, agentExecutor, hub, true)
 	apiServer := api.New(database, redisCache, authService, runService, hub, schools, cfg.DevAuthEnabled, cfg.AllowedOrigins, api.RuntimeInfo{
-		Version: version, AgentMode: cfg.AgentMode, LLMProvider: cfg.LLMProvider, WebSearchProvider: cfg.WebSearchProvider,
+		Version: version, AgentMode: cfg.AgentMode, LLMProvider: cfg.LLMProvider,
+		WebSearchProvider: cfg.WebSearchProvider, KnowledgeProvider: cfg.KnowledgeProvider,
 	})
 	httpServer := &http.Server{
 		Addr: cfg.HTTPAddr, Handler: apiServer.Handler(), ReadHeaderTimeout: 5 * time.Second,
@@ -124,7 +158,7 @@ func main() {
 	}
 
 	go func() {
-		logger.Info("AskU API started", "addr", cfg.HTTPAddr, "agent_mode", cfg.AgentMode, "llm_provider", cfg.LLMProvider, "llm_model", cfg.LLMModel, "web_search_provider", cfg.WebSearchProvider)
+		logger.Info("AskU API started", "addr", cfg.HTTPAddr, "agent_mode", cfg.AgentMode, "llm_provider", cfg.LLMProvider, "llm_model", cfg.LLMModel, "web_search_provider", cfg.WebSearchProvider, "knowledge_provider", cfg.KnowledgeProvider)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("HTTP server failed", "error", err)
 			os.Exit(1)

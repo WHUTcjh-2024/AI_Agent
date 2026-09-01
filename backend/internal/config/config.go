@@ -32,6 +32,11 @@ type Config struct {
 	WebSearchSearchTTL  time.Duration
 	WebSearchPageTTL    time.Duration
 	WebSearchExtractTTL time.Duration
+	KnowledgeProvider   string
+	WeKnoraBaseURL      string
+	WeKnoraAPIKey       string
+	WeKnoraTimeout      time.Duration
+	KnowledgeTopN       int
 	AccessTokenTTL      time.Duration
 	RefreshTokenTTL     time.Duration
 	ShutdownTimeout     time.Duration
@@ -46,7 +51,7 @@ func Load() (Config, error) {
 		RedisPassword:       os.Getenv("ASKU_REDIS_PASSWORD"),
 		SchoolConfig:        env("ASKU_SCHOOL_CONFIG", "../config/schools/whut.yaml"),
 		DevAuthEnabled:      false,
-		AgentMode:           env("ASKU_AGENT_MODE", "mock"),
+		AgentMode:           env("ASKU_AGENT_MODE", "policy"),
 		LLMProvider:         env("ASKU_LLM_PROVIDER", "mock"),
 		LLMBaseURL:          strings.TrimSpace(os.Getenv("ASKU_LLM_BASE_URL")),
 		LLMAPIKey:           strings.TrimSpace(os.Getenv("ASKU_LLM_API_KEY")),
@@ -60,6 +65,11 @@ func Load() (Config, error) {
 		WebSearchSearchTTL:  10 * time.Minute,
 		WebSearchPageTTL:    30 * time.Minute,
 		WebSearchExtractTTL: 30 * time.Minute,
+		KnowledgeProvider:   env("ASKU_KNOWLEDGE_PROVIDER", "disabled"),
+		WeKnoraBaseURL:      strings.TrimSpace(os.Getenv("ASKU_WEKNORA_BASE_URL")),
+		WeKnoraAPIKey:       strings.TrimSpace(os.Getenv("ASKU_WEKNORA_API_KEY")),
+		WeKnoraTimeout:      12 * time.Second,
+		KnowledgeTopN:       4,
 		AccessTokenTTL:      time.Hour,
 		RefreshTokenTTL:     30 * 24 * time.Hour,
 		ShutdownTimeout:     10 * time.Second,
@@ -87,6 +97,12 @@ func Load() (Config, error) {
 	if cfg.WebSearchExtractTTL, err = envDuration("ASKU_WEB_SEARCH_EXTRACT_TTL", cfg.WebSearchExtractTTL); err != nil {
 		return Config{}, err
 	}
+	if cfg.WeKnoraTimeout, err = envDuration("ASKU_WEKNORA_TIMEOUT", cfg.WeKnoraTimeout); err != nil {
+		return Config{}, err
+	}
+	if cfg.KnowledgeTopN, err = envPositiveInt("ASKU_KNOWLEDGE_TOP_N", cfg.KnowledgeTopN); err != nil {
+		return Config{}, err
+	}
 	if cfg.AccessTokenTTL, err = envDuration("ASKU_ACCESS_TOKEN_TTL", cfg.AccessTokenTTL); err != nil {
 		return Config{}, err
 	}
@@ -102,8 +118,8 @@ func Load() (Config, error) {
 	if cfg.LLMOutputPrice, err = envNonNegativeFloat("ASKU_LLM_OUTPUT_RMB_PER_MTOK", 0); err != nil {
 		return Config{}, err
 	}
-	if cfg.AgentMode != "mock" {
-		return Config{}, fmt.Errorf("unsupported ASKU_AGENT_MODE %q; only the mock router is currently registered", cfg.AgentMode)
+	if cfg.AgentMode != "mock" && cfg.AgentMode != "policy" {
+		return Config{}, fmt.Errorf("unsupported ASKU_AGENT_MODE %q", cfg.AgentMode)
 	}
 	if cfg.LLMProvider != "mock" && cfg.LLMProvider != "openai-compatible" {
 		return Config{}, fmt.Errorf("unsupported ASKU_LLM_PROVIDER %q", cfg.LLMProvider)
@@ -119,11 +135,23 @@ func Load() (Config, error) {
 	if cfg.WebSearchProvider == "searxng" && cfg.WebSearchBaseURL == "" {
 		return Config{}, errors.New("searxng provider requires ASKU_WEB_SEARCH_BASE_URL")
 	}
+	if cfg.KnowledgeProvider != "disabled" && cfg.KnowledgeProvider != "weknora" {
+		return Config{}, fmt.Errorf("unsupported ASKU_KNOWLEDGE_PROVIDER %q", cfg.KnowledgeProvider)
+	}
+	if cfg.KnowledgeProvider == "weknora" && (cfg.WeKnoraBaseURL == "" || cfg.WeKnoraAPIKey == "") {
+		return Config{}, errors.New("weknora provider requires ASKU_WEKNORA_BASE_URL and ASKU_WEKNORA_API_KEY")
+	}
 	if cfg.WebSearchTimeout <= 0 || cfg.WebSearchSearchTTL <= 0 || cfg.WebSearchPageTTL <= 0 || cfg.WebSearchExtractTTL <= 0 {
 		return Config{}, errors.New("web search timeout and cache TTLs must be positive")
 	}
 	if cfg.WebSearchTopN < 1 || cfg.WebSearchTopN > 5 {
 		return Config{}, errors.New("ASKU_WEB_SEARCH_TOP_N must be between 1 and 5")
+	}
+	if cfg.WeKnoraTimeout <= 0 {
+		return Config{}, errors.New("WeKnora timeout must be positive")
+	}
+	if cfg.KnowledgeTopN < 1 || cfg.KnowledgeTopN > 10 {
+		return Config{}, errors.New("ASKU_KNOWLEDGE_TOP_N must be between 1 and 10")
 	}
 	return cfg, nil
 }

@@ -69,10 +69,17 @@ export function SourceDetailScreen() {
           <Text style={styles.mockNote}>摘要用于快速确认来源，具体内容请以学校原文为准。</Text>
         </View>
 
-        <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(source.url)} style={({ pressed }) => [styles.openButton, pressed && styles.openPressed]}>
-          <Ionicons name="open-outline" size={19} color={colors.white} />
-          <Text style={styles.openText}>查看学校原文</Text>
-        </Pressable>
+        {source.url ? (
+          <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(source.url)} style={({ pressed }) => [styles.openButton, pressed && styles.openPressed]}>
+            <Ionicons name="open-outline" size={19} color={colors.white} />
+            <Text style={styles.openText}>查看学校原文</Text>
+          </Pressable>
+        ) : (
+          <View accessibilityRole="text" style={styles.unavailableSource}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.textSecondary} />
+            <Text style={styles.unavailableSourceText}>学校原文链接尚未录入</Text>
+          </View>
+        )}
       </ScrollView>
     </Screen>
   );
@@ -96,4 +103,6 @@ const styles = StyleSheet.create({
   openButton: { minHeight: 52, marginTop: spacing[10], flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing[2], backgroundColor: colors.accent, borderRadius: radius.md },
   openPressed: { backgroundColor: colors.accentPressed },
   openText: { ...typography.bodyStrong, color: colors.white },
+  unavailableSource: { minHeight: 52, marginTop: spacing[10], flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing[2], backgroundColor: colors.surfaceMuted, borderRadius: radius.md },
+  unavailableSourceText: { ...typography.bodyStrong, color: colors.textSecondary },
 });
