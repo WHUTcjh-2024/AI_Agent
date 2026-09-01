@@ -1,0 +1,25 @@
+export const colors = {
+  background: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceMuted: '#F7F8FA',
+  surfaceBlue: '#F2F6FF',
+  textPrimary: '#111827',
+  textSecondary: '#667085',
+  textMuted: '#98A2B3',
+  border: '#E4E7EC',
+  borderStrong: '#D0D5DD',
+  accent: '#246BFD',
+  accentPressed: '#1D55D8',
+  accentSoft: '#EAF1FF',
+  success: '#079455',
+  successSoft: '#ECFDF3',
+  warning: '#DC6803',
+  warningSoft: '#FFFAEB',
+  danger: '#D92D20',
+  dangerSoft: '#FEF3F2',
+  overlay: 'rgba(16, 24, 40, 0.38)',
+  white: '#FFFFFF',
+  transparent: 'transparent',
+} as const;
+
+export type ColorToken = keyof typeof colors;

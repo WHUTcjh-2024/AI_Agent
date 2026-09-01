@@ -1,0 +1,72 @@
+name: asku-phase2
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: asku
+      POSTGRES_USER: asku
+      POSTGRES_PASSWORD: asku_dev
+    volumes:
+      - asku_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asku -d asku"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    volumes:
+      - asku_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ../../backend
+    environment:
+      ASKU_HTTP_ADDR: ":18080"
+      ASKU_DATABASE_URL: "postgres://asku:asku_dev@postgres:5432/asku?sslmode=disable"
+      ASKU_REDIS_ADDR: "redis:6379"
+      ASKU_SCHOOL_CONFIG: "/config/schools/whut.yaml"
+      ASKU_DEV_AUTH_ENABLED: "true"
+      ASKU_AGENT_MODE: "mock"
+      ASKU_LLM_PROVIDER: "${ASKU_LLM_PROVIDER:-mock}"
+      ASKU_LLM_BASE_URL: "${ASKU_LLM_BASE_URL:-}"
+      ASKU_LLM_API_KEY: "${ASKU_LLM_API_KEY:-}"
+      ASKU_LLM_MODEL: "${ASKU_LLM_MODEL:-asku-mock}"
+      ASKU_LLM_TIMEOUT: "${ASKU_LLM_TIMEOUT:-45s}"
+      ASKU_LLM_INPUT_RMB_PER_MTOK: "${ASKU_LLM_INPUT_RMB_PER_MTOK:-0}"
+      ASKU_LLM_OUTPUT_RMB_PER_MTOK: "${ASKU_LLM_OUTPUT_RMB_PER_MTOK:-0}"
+      ASKU_WEB_SEARCH_PROVIDER: "${ASKU_WEB_SEARCH_PROVIDER:-mock}"
+      ASKU_WEB_SEARCH_BASE_URL: "${ASKU_WEB_SEARCH_BASE_URL:-}"
+      ASKU_WEB_SEARCH_API_KEY: "${ASKU_WEB_SEARCH_API_KEY:-}"
+      ASKU_WEB_SEARCH_TIMEOUT: "${ASKU_WEB_SEARCH_TIMEOUT:-12s}"
+      ASKU_WEB_SEARCH_TOP_N: "${ASKU_WEB_SEARCH_TOP_N:-3}"
+      ASKU_WEB_SEARCH_SEARCH_TTL: "${ASKU_WEB_SEARCH_SEARCH_TTL:-10m}"
+      ASKU_WEB_SEARCH_PAGE_TTL: "${ASKU_WEB_SEARCH_PAGE_TTL:-30m}"
+      ASKU_WEB_SEARCH_EXTRACT_TTL: "${ASKU_WEB_SEARCH_EXTRACT_TTL:-30m}"
+      ASKU_CORS_ORIGINS: "*"
+    ports:
+      - "18080:18080"
+    volumes:
+      - ../../config/schools:/config/schools:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:18080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  asku_postgres_data:
+  asku_redis_data:

@@ -1,0 +1,44 @@
+# Local secrets. Keep committed examples only.
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# JavaScript / Expo dependencies and generated output.
+node_modules/
+.expo/
+dist/
+web-build/
+coverage/
+*.tsbuildinfo
+
+# Generated native projects and local signing material.
+apps/mobile/android/
+apps/mobile/ios/
+*.apk
+*.aab
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.pem
+
+# Go build and coverage output.
+bin/
+coverage.out
+
+# Local QA captures and temporary files.
+tmp/
+apps/mobile/artifacts/
+apps/mobile/.git-backup-local/
+
+# Editor, OS, and log files.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*

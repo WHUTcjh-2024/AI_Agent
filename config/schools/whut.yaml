@@ -1,0 +1,13 @@
+school_id: whut
+school_name: 武汉理工大学
+allowed_domains:
+  - whut.edu.cn
+  - jwc.whut.edu.cn
+  - lib.whut.edu.cn
+  - job.whut.edu.cn
+official_knowledge_base_id: ""
+community_knowledge_base_id: ""
+source_tags:
+  official: 官方
+  department: 部门官网
+  community: 校园经验
