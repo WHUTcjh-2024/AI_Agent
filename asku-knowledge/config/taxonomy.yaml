@@ -1,0 +1,479 @@
+# Taxonomy — 稳定分类体系
+#
+# §6：每篇有效知识必须至少有 school_id / education_level / primary_module /
+#     secondary_topic / document_type / audience。
+#     secondary_topic 使用稳定 slug，禁止每篇文档动态创造新的随意分类。
+# §25：只有需要运行时过滤的维度才下沉为 WeKnora Tag。
+
+version: 1
+
+education_levels:
+  - UNDERGRADUATE
+  - GRADUATE
+  - BOTH
+  - PROSPECTIVE
+  - UNKNOWN
+
+primary_modules:
+  - UNDERGRAD_ACADEMIC
+  - GRADUATE_ACADEMIC
+  - STUDENT_AFFAIRS
+  - EXAM_CERTIFICATION
+  - CAMPUS_LIFE
+  - FRESHMAN
+  - INNOVATION
+  - CAREER
+  - INTERNATIONAL
+  - COLLEGE_SPECIFIC
+  - OTHER
+
+# 稳定 slug。分类只能落到这里面，落不进去则 OTHER + UNCERTAIN。
+secondary_topics:
+  other:                    # 无法稳定归类；必须保持 UNCERTAIN / NO_RAG
+    primary_module: OTHER
+    priority: P2
+  recommendation:           # 推免 / 保研（P0）
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  transfer_major:           # 转专业（P0）
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  scholarship:              # 奖学金（P0）
+    primary_module: STUDENT_AFFAIRS
+    priority: P0
+  comprehensive_evaluation: # 综测（P0）
+    primary_module: STUDENT_AFFAIRS
+    priority: P0
+  cet:                      # 四六级（P0）
+    primary_module: EXAM_CERTIFICATION
+    priority: P0
+  student_status:           # 学籍
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  course_selection:         # 选课
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  exam:                     # 考试
+    primary_module: EXAM_CERTIFICATION
+    priority: P0
+  makeup_retake:            # 补考 / 重修
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  graduation:               # 毕业要求
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P1
+  degree:                   # 学位要求
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P1
+  program_plan:             # 培养方案
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P0
+  graduate_training:        # 研究生培养
+    primary_module: GRADUATE_ACADEMIC
+    priority: P0
+  graduate_degree:          # 研究生学位
+    primary_module: GRADUATE_ACADEMIC
+    priority: P0
+  thesis_review:            # 论文送审
+    primary_module: GRADUATE_ACADEMIC
+    priority: P0
+  defense:                  # 答辩
+    primary_module: GRADUATE_ACADEMIC
+    priority: P0
+  graduate_scholarship:     # 研究生奖学金
+    primary_module: GRADUATE_ACADEMIC
+    priority: P1
+  freshman:                 # 新生入学
+    primary_module: FRESHMAN
+    priority: P1
+  campus_card:              # 校园卡
+    primary_module: CAMPUS_LIFE
+    priority: P1
+  campus_network:           # 校园网
+    primary_module: CAMPUS_LIFE
+    priority: P1
+  library:                  # 图书馆
+    primary_module: CAMPUS_LIFE
+    priority: P1
+  academic_calendar:        # 校历
+    primary_module: CAMPUS_LIFE
+    priority: P1
+  holiday:                  # 放假
+    primary_module: CAMPUS_LIFE
+    priority: P2
+  competition:              # 竞赛
+    primary_module: INNOVATION
+    priority: P1
+  innovation_project:       # 大创
+    primary_module: INNOVATION
+    priority: P1
+  career_procedure:         # 就业手续
+    primary_module: CAREER
+    priority: P1
+  international:            # 国际交流
+    primary_module: INTERNATIONAL
+    priority: P2
+  discipline:               # 处分 / 违纪
+    primary_module: STUDENT_AFFAIRS
+    priority: P2
+  dorm:                     # 宿舍
+    primary_module: CAMPUS_LIFE
+    priority: P2
+  medical:                  # 校医院 / 医保
+    primary_module: CAMPUS_LIFE
+    priority: P2
+  financial_aid:            # 助学金 / 资助
+    primary_module: STUDENT_AFFAIRS
+    priority: P1
+  party_youthleague:        # 党团 / 团委
+    primary_module: STUDENT_AFFAIRS
+    priority: P2
+
+document_types:
+  - POLICY_REGULATION
+  - ANNUAL_NOTICE
+  - DEADLINE_NOTICE
+  - PROCEDURE_GUIDE
+  - FAQ
+  - FORM_TEMPLATE
+  - APPLICATION_MATERIAL
+  - CALENDAR
+  - PROGRAM_PLAN
+  - RESULT_ANNOUNCEMENT
+  - SERVICE_GUIDE
+  - CONTACT_INFORMATION
+  - INDEX_PAGE
+  - SOURCE_DISCOVERY
+  - NEWS_RELEVANT
+  - OTHER
+
+# INDEX_PAGE / SOURCE_DISCOVERY 只用于发现和增量，默认不进正式 RAG（§8）
+non_rag_document_types:
+  - INDEX_PAGE
+  - SOURCE_DISCOVERY
+
+# 重点知识类型（§8），质量分加权
+key_document_types:
+  - POLICY_REGULATION
+  - ANNUAL_NOTICE
+  - DEADLINE_NOTICE
+  - PROCEDURE_GUIDE
+  - PROGRAM_PLAN
+  - FORM_TEMPLATE
+  - APPLICATION_MATERIAL
+
+audiences:
+  - UNDERGRADUATE
+  - GRADUATE
+  - FRESHMAN
+  - PROSPECTIVE
+  - TEACHER
+  - ALL
+  - UNKNOWN
+
+# ---------------------------------------------------------------
+# 规则化分类关键词（§20：规则 → Source → URL → 栏目 → Title → 关键词）
+# 只有规则链给出低置信度时才允许 LLM fallback，且未配置 LLM 时不许猜。
+# ---------------------------------------------------------------
+topic_keywords:
+  recommendation:
+    - 推免
+    - 保研
+    - 推荐免试
+    - 免试攻读
+    - 推免生
+    - 推荐免试研究生
+    - 免试研究生
+  transfer_major:
+    - 转专业
+    - 专业分流
+    - 大类分流
+    - 转入
+    - 转出
+  scholarship:
+    - 奖学金
+    - 国家奖学金
+    - 励志奖学金
+    - 学业奖学金
+  comprehensive_evaluation:
+    - 综合素质测评
+    - 综测
+    - 综合测评
+  cet:
+    - 四六级
+    - 大学英语四
+    - 大学英语六
+    - CET-4
+    - CET-6
+    - 全国大学英语
+  student_status:
+    - 学籍
+    - 休学
+    - 复学
+    - 退学
+    - 保留学籍
+    - 学籍异动
+  course_selection:
+    - 选课
+    - 退课
+    - 改课
+    - 课表
+    - 选课通知
+  exam:
+    - 期末考试
+    - 期中考试
+    - 考试安排
+    - 考场
+    - 缓考
+  makeup_retake:
+    - 补考
+    - 重修
+    - 缓考
+    - 刷分
+  graduation:
+    - 毕业
+    - 毕业资格
+    - 毕业审核
+    - 结业
+  degree:
+    - 学位
+    - 学士学位
+    - 学位授予
+  program_plan:
+    - 培养方案
+    - 培养计划
+    - 教学计划
+    - 专业培养
+  graduate_training:
+    - 研究生培养
+    - 研究生学籍
+    - 硕博连读
+    - 研究生课程
+  graduate_degree:
+    - 硕士学位
+    - 博士学位
+    - 研究生学位
+  thesis_review:
+    - 论文送审
+    - 盲审
+    - 学位论文
+    - 抽检
+    - 论文检测
+  defense:
+    - 答辩
+    - 论文答辩
+    - 答辩委员会
+  graduate_scholarship:
+    - 研究生奖学金
+    - 研究生学业奖学金
+    - 研究生国家奖学金
+  freshman:
+    - 新生
+    - 入学
+    - 报到
+    - 迎新
+    - 军训
+  campus_card:
+    - 校园卡
+    - 一卡通
+    - 卡务
+  campus_network:
+    - 校园网
+    - 上网
+    - 网络认证
+    - 无线网
+  library:
+    - 图书馆
+    - 借阅
+    - 开放时间
+    - 闭馆
+  academic_calendar:
+    - 校历
+    - 学期安排
+    - 开学
+    - 注册
+  holiday:
+    - 放假
+    - 寒暑假
+    - 节假日
+  competition:
+    - 竞赛
+    - 学科竞赛
+    - 数学建模
+    - 挑战杯
+  innovation_project:
+    - 大创
+    - 创新创业训练
+    - 大学生创新创业
+  career_procedure:
+    - 就业
+    - 三方协议
+    - 派遣
+    - 报到证
+    - 档案
+  international:
+    - 出国
+    - 交换
+    - 公派
+    - 留学
+    - 国际交流
+  discipline:
+    - 处分
+    - 违纪
+    - 作弊
+    - 学术不端
+  dorm:
+    - 宿舍
+    - 住宿
+    - 寝室
+  medical:
+    - 校医院
+    - 医保
+    - 体检
+    - 医疗费
+  financial_aid:
+    - 助学金
+    - 资助
+    - 勤工助学
+    - 助学贷款
+  party_youthleague:
+    - 团委
+    - 团学
+    - 团支部
+    - 党课
+
+# 文档类型识别关键词
+document_type_keywords:
+  POLICY_REGULATION:
+    - 管理办法
+    - 实施细则
+    - 规定
+    - 条例
+    - 章程
+    - 办法
+  ANNUAL_NOTICE:
+    - 年度
+    - 关于20
+    - 工作的通知
+  DEADLINE_NOTICE:
+    - 截止
+    - 逾期
+    - 报名截止
+    - 时间节点
+  PROCEDURE_GUIDE:
+    - 流程
+    - 指南
+    - 如何
+    - 办理
+    - 操作说明
+  FAQ:
+    - 常见问题
+    - 问答
+    - FAQ
+  FORM_TEMPLATE:
+    - 申请表
+    - 审批表
+    - 模板
+    - 表格
+  APPLICATION_MATERIAL:
+    - 材料
+    - 提交材料
+    - 申请材料
+  CALENDAR:
+    - 校历
+    - 日程
+    - 时间安排
+  PROGRAM_PLAN:
+    - 培养方案
+    - 培养计划
+    - 教学计划
+  RESULT_ANNOUNCEMENT:
+    - 公示
+    - 名单
+    - 结果
+    - 评选结果
+  SERVICE_GUIDE:
+    - 服务指南
+    - 办事指南
+    - 服务
+  CONTACT_INFORMATION:
+    - 联系方式
+    - 联系我们
+    - 联系电话
+    - 办公电话
+
+# ---------------------------------------------------------------
+# 低价值信号（§9）：命中即降权，不因为这些词就直接判定 NO_RAG，
+# 但如果正文不含学生政策/流程/条件，则不进主 RAG。
+# ---------------------------------------------------------------
+low_value_keywords:
+  - 领导视察
+  - 莅临
+  - 调研指导
+  - 党建工作
+  - 党史学习
+  - 主题教育
+  - 教师风采
+  - 校友
+  - 捐赠
+  - 采购公告
+  - 招标公告
+  - 中标
+  - 教师招聘
+  - 人才引进
+  - 述职
+  - 慰问
+
+# 学生价值信号（§9 反例）：命中说明正文真的包含学生可执行的政策/流程
+student_value_keywords:
+  - 申请
+  - 报名
+  - 条件
+  - 资格
+  - 流程
+  - 材料
+  - 截止
+  - 时间
+  - 办法
+  - 规定
+  - 要求
+  - 评分
+  - 加分
+  - 名额
+  - 成绩
+  - 学分
+  - 办理
+
+# ---------------------------------------------------------------
+# WeKnora Tags（§25）：只把需要运行时过滤的维度做 Tag
+# ---------------------------------------------------------------
+weknora_tags:
+  education:
+    - edu:undergraduate
+    - edu:graduate
+    - edu:both
+    - edu:prospective
+  module:
+    - module:undergrad-academic
+    - module:graduate-academic
+    - module:student-affairs
+    - module:exam-certification
+    - module:campus-life
+    - module:freshman
+    - module:innovation
+    - module:career
+    - module:international
+    - module:college-specific
+  authority:
+    - authority:university
+    - authority:department
+    - authority:college
+  # 热门主题才增加 topic tag，避免为每个细碎 topic 建 tag
+  hot_topic:
+    - topic:recommendation
+    - topic:transfer-major
+    - topic:cet
+    - topic:scholarship
+    - topic:comprehensive-evaluation
+    - topic:thesis-review
+    - topic:graduate-degree

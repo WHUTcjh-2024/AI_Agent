@@ -1,0 +1,238 @@
+# SourceRegistry — 武汉理工官方公开来源登记表
+#
+# 约束 #3：只有登记在本文件且 active=true 的 official 域名才会被抓取。
+#         站外链接（微信、微博、新闻门户等）只写入 knowledge.candidate_sources，
+#         作为候选来源记录，绝不自动继续抓取。
+# §5：Source Discovery 从学校主页 / 组织机构 / 学院列表 / 栏目页自动发现，
+#     新发现的 *.whut.edu.cn 官方子域可由 Discovery 自动登记进来。
+#
+# 字段对齐 knowledge.sources 契约：
+#   source_key → sources.id 后缀；name → source_name；
+#   authority_type → authority；official_url → official_url。
+
+version: 1
+school_id: whut
+
+sources:
+
+  # ---------------- P0：核心学生业务域 ----------------
+  - source_key: jwc
+    name: 本科生院 / 教务处
+    department: 本科生院
+    base_url: https://jwc.whut.edu.cn/
+    domains: [jwc.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P0
+    education_level: UNDERGRADUATE
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: gd
+    name: 研究生院
+    department: 研究生院
+    base_url: https://gd.whut.edu.cn/
+    domains: [gd.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P0
+    education_level: GRADUATE
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: lib
+    name: 图书馆
+    department: 图书馆
+    base_url: https://lib.whut.edu.cn/
+    domains: [lib.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P0
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: backend_school_config
+
+  - source_key: job
+    name: 就业指导中心
+    department: 就业指导中心
+    base_url: https://job.whut.edu.cn/
+    domains: [job.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P0
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: backend_school_config
+
+  - source_key: scc
+    name: 学生就业与创业指导中心
+    department: 学生就业与创业指导中心
+    base_url: https://scc.whut.edu.cn/
+    domains: [scc.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P0
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: www
+    name: 武汉理工大学主页
+    department: 学校办公室
+    base_url: https://www.whut.edu.cn/
+    domains: [www.whut.edu.cn, whut.edu.cn]
+    authority_type: OFFICIAL_SCHOOL
+    priority: P0
+    education_level: BOTH
+    active: true
+    name_confirmed: true
+    discovered_from: seed
+
+  # ---------------- P1：学生服务与专项 ----------------
+  - source_key: xxgk
+    name: 信息公开网
+    department: 学校办公室
+    base_url: https://xxgk.whut.edu.cn/
+    domains: [xxgk.whut.edu.cn]
+    authority_type: OFFICIAL_SCHOOL
+    priority: P1
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: zs
+    name: 本科生招生
+    department: 招生办公室
+    base_url: https://zs.whut.edu.cn/
+    domains: [zs.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P1
+    education_level: PROSPECTIVE
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: gjc
+    name: 国际交流与合作处
+    department: 国际交流与合作处
+    base_url: https://gjc.whut.edu.cn/
+    domains: [gjc.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P1
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: i
+    name: 网络信息中心
+    department: 网络信息中心
+    base_url: https://i.whut.edu.cn/
+    domains: [i.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P1
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: "100"
+    name: 百年校庆
+    department: 学校办公室
+    base_url: https://100.whut.edu.cn/
+    domains: [100.whut.edu.cn]
+    authority_type: OFFICIAL_SCHOOL
+    priority: P2
+    education_level: UNKNOWN
+    active: false
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: wljy
+    name: 网络教育学院
+    department: 网络教育学院
+    base_url: https://wljy.whut.edu.cn/
+    domains: [wljy.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P1
+    education_level: UNKNOWN
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  # ---------------- P2：学院与低信号站点 ----------------
+  - source_key: sie
+    name: 信息工程学院
+    department: 信息工程学院
+    base_url: https://sie.whut.edu.cn/
+    domains: [sie.whut.edu.cn]
+    authority_type: OFFICIAL_COLLEGE
+    priority: P1
+    education_level: BOTH
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: amucwut
+    name: amucwut
+    department: ""
+    base_url: https://amucwut.whut.edu.cn/
+    domains: [amucwut.whut.edu.cn]
+    authority_type: OFFICIAL_COLLEGE
+    priority: P2
+    education_level: UNKNOWN
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: english
+    name: English Site
+    department: 国际交流与合作处
+    base_url: https://english.whut.edu.cn/
+    domains: [english.whut.edu.cn]
+    authority_type: OFFICIAL_SCHOOL
+    priority: P2
+    education_level: UNKNOWN
+    active: false
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: news
+    name: 新闻网
+    department: 党委宣传部
+    base_url: https://news.whut.edu.cn/
+    domains: [news.whut.edu.cn]
+    authority_type: OFFICIAL_SCHOOL
+    # §9：新闻类默认 LOW_PRIORITY，除非正文真正包含学生政策/流程/条件
+    priority: P2
+    education_level: UNKNOWN
+    active: true
+    name_confirmed: false
+    discovered_from: homepage
+
+  # ---------------- P2：默认关闭的低价值域（§9） ----------------
+  # 采购公告、教师招聘 → 默认不进入主 RAG，先关闭采集
+  - source_key: cgyztb
+    name: 采购与招标
+    department: 采购与招标管理办公室
+    base_url: https://cgyztb.whut.edu.cn/
+    domains: [cgyztb.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P2
+    education_level: UNKNOWN
+    active: false
+    name_confirmed: false
+    discovered_from: homepage
+
+  - source_key: zhaopin
+    name: 人才招聘
+    department: 人事处
+    base_url: https://zhaopin.whut.edu.cn/
+    domains: [zhaopin.whut.edu.cn]
+    authority_type: OFFICIAL_DEPARTMENT
+    priority: P2
+    education_level: UNKNOWN
+    active: false
+    name_confirmed: false
+    discovered_from: homepage

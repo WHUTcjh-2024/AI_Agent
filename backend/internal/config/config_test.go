@@ -35,6 +35,9 @@ func TestLoadMockProviderDefaults(t *testing.T) {
 	if cfg.DevAuthEnabled {
 		t.Fatal("development login must be disabled by default")
 	}
+	if cfg.KnowledgeQueryCacheTTL <= 0 || cfg.AnswerCacheTTL <= 0 || cfg.QuestionRateLimit != 30 {
+		t.Fatalf("unexpected cost-control defaults: %#v", cfg)
+	}
 }
 
 func TestLoadRejectsIncompleteWeKnoraConfiguration(t *testing.T) {
@@ -86,5 +89,27 @@ func TestLoadRejectsMalformedOperationalSettings(t *testing.T) {
 	t.Setenv("ASKU_LLM_TIMEOUT", "forever")
 	if _, err := Load(); err == nil {
 		t.Fatal("expected invalid duration error")
+	}
+}
+
+func TestLoadRejectsInvalidCostControlSettings(t *testing.T) {
+	t.Setenv("ASKU_LLM_PROVIDER", "mock")
+	t.Setenv("ASKU_ANSWER_CACHE_TTL", "0s")
+	if _, err := Load(); err == nil {
+		t.Fatal("zero answer cache TTL must be rejected")
+	}
+
+	t.Setenv("ASKU_ANSWER_CACHE_TTL", "30m")
+	t.Setenv("ASKU_QUESTION_RATE_LIMIT_PER_MINUTE", "1001")
+	if _, err := Load(); err == nil {
+		t.Fatal("unsafe question rate limit must be rejected")
+	}
+}
+
+func TestLoadRejectsInvalidReportingTimeZone(t *testing.T) {
+	t.Setenv("ASKU_LLM_PROVIDER", "mock")
+	t.Setenv("ASKU_REPORTING_TIMEZONE", "Mars/Olympus")
+	if _, err := Load(); err == nil {
+		t.Fatal("invalid reporting timezone must fail at startup")
 	}
 }

@@ -14,13 +14,16 @@ func TestModuleDependencyBoundaries(t *testing.T) {
 	_, currentFile, _, _ := runtime.Caller(0)
 	internalRoot := filepath.Dir(filepath.Dir(currentFile))
 	rules := map[string][]string{
-		"domain":    {"asku/backend/internal/agent", "asku/backend/internal/api", "asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/run"},
-		"run":       {"asku/backend/internal/llm", "asku/backend/internal/knowledge", "asku/backend/internal/websearch", "asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api"},
-		"api":       {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/llm", "asku/backend/internal/knowledge", "asku/backend/internal/websearch"},
-		"auth":      {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api"},
-		"llm":       {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
-		"knowledge": {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
-		"websearch": {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
+		"domain":        {"asku/backend/internal/agent", "asku/backend/internal/api", "asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/run"},
+		"run":           {"asku/backend/internal/llm", "asku/backend/internal/knowledge", "asku/backend/internal/websearch", "asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api"},
+		"api":           {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/llm", "asku/backend/internal/knowledge", "asku/backend/internal/websearch"},
+		"auth":          {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api"},
+		"cache":         {"asku/backend/internal/agent", "asku/backend/internal/api", "asku/backend/internal/domain", "asku/backend/internal/knowledge", "asku/backend/internal/run", "asku/backend/internal/store", "asku/backend/internal/websearch"},
+		"llm":           {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
+		"knowledge":     {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
+		"websearch":     {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent"},
+		"citation":      {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent", "asku/backend/internal/knowledge", "asku/backend/internal/websearch"},
+		"observability": {"asku/backend/internal/store", "asku/backend/internal/cache", "asku/backend/internal/api", "asku/backend/internal/run", "asku/backend/internal/agent", "asku/backend/internal/knowledge", "asku/backend/internal/websearch", "asku/backend/internal/domain"},
 	}
 	for packageName, forbidden := range rules {
 		t.Run(packageName, func(t *testing.T) {

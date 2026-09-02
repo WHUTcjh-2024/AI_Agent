@@ -1,4 +1,4 @@
-# AskU APP Architecture V0.5
+# AskU APP Architecture V0.9
 
 React Native / Expo / TypeScript 移动端。默认通过 `ApiChatService` 连接 AskU Go Backend，真实持久化会话并消费可重连 SSE；`MockChatService` 仅保留为离线 UI 回归模式。
 
@@ -53,15 +53,7 @@ npm run ios
 
 ## Build APK
 
-本仓库生成的 V0.5 内部测试包：
-
-```text
-artifacts/AskU-Architecture-v0.5.0-release.apk
-```
-
-该文件使用 Android Debug 证书签名，仅用于 Demo 与内部测试，不可直接用于应用商店发布。
-
-当前测试包 SHA-256：`5B638B9C231C19A0916706C92E1878312F5BDA10FD44E451DA73D4581CC1692D`
+`artifacts/` 只存放本地构建产物且不会提交到 Git；发布包必须由 CI/EAS 或受控签名环境生成，不使用开发证书分发。
 
 推荐用 EAS Preview 构建可直接安装的 APK：
 

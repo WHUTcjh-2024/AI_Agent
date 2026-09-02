@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: AskU API
-  version: 0.5.0
+  version: 0.9.0
   description: AskU stable mobile contract. WeChat, WeKnora, Web Search and LLM remain adapter boundaries.
 servers:
   - url: http://localhost:18080
@@ -103,17 +103,225 @@ paths:
       responses:
         "204": { description: Cancellation requested }
   /v1/sources/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
     get:
       security: [{ bearerAuth: [] }]
       responses:
-        "200": { description: Source detail }
+        "200":
+          description: Verifiable source detail; never includes internal file paths
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Source" }
   /v1/feedback:
     post:
       security: [{ bearerAuth: [] }]
       responses:
         "201": { description: Feedback persisted }
+  /v1/admin/overview:
+    get:
+      summary: Read-only operational overview for the current school
+      description: Date-only `to` is inclusive in the configured reporting timezone. The effective interval returned by the API is half-open `[from,to)`.
+      security: [{ adminBearerAuth: [] }]
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, description: RFC3339 or YYYY-MM-DD }
+        - in: query
+          name: to
+          schema: { type: string, description: RFC3339 or YYYY-MM-DD }
+        - in: query
+          name: schoolId
+          schema: { type: string }
+      responses:
+        "200":
+          description: Aggregated users, engagement, quality, latency, cost and daily metrics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminOverview" }
+        "400": { description: Invalid school or time window }
+        "401": { description: Missing or invalid independent Admin token }
+        "404": { description: Admin API disabled }
 components:
+  schemas:
+    CountMetric:
+      type: object
+      required: [name, count]
+      properties:
+        name: { type: string }
+        count: { type: integer, format: int64 }
+    AdminOverview:
+      type: object
+      required: [generatedAt, window, users, engagement, quality, performance, cost, routes, errorCodes, topQuestions, daily]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        window:
+          type: object
+          required: [schoolId, from, to, timeZone]
+          properties:
+            schoolId: { type: string }
+            from: { type: string, format: date-time }
+            to: { type: string, format: date-time }
+            timeZone: { type: string, examples: [Asia/Shanghai] }
+        users:
+          type: object
+          properties:
+            totalRegistered: { type: integer, format: int64 }
+            newRegistered: { type: integer, format: int64 }
+            activeUsers: { type: integer, format: int64 }
+            d1Eligible: { type: integer, format: int64 }
+            d1Retained: { type: integer, format: int64 }
+            d1RetentionRate: { type: number, minimum: 0, maximum: 1 }
+            d7Eligible: { type: integer, format: int64 }
+            d7Retained: { type: integer, format: int64 }
+            d7RetentionRate: { type: number, minimum: 0, maximum: 1 }
+        engagement:
+          type: object
+          properties:
+            questions: { type: integer, format: int64 }
+            activeSessions: { type: integer, format: int64 }
+            questionsPerActiveUser: { type: number }
+            averageSessionTurns: { type: number }
+        quality:
+          type: object
+          properties:
+            runs: { type: integer, format: int64 }
+            completedRuns: { type: integer, format: int64 }
+            failedRuns: { type: integer, format: int64 }
+            cancelledRuns: { type: integer, format: int64 }
+            successRate: { type: number, minimum: 0, maximum: 1 }
+            noSourceAnswers: { type: integer, format: int64 }
+            noSourceRate: { type: number, minimum: 0, maximum: 1 }
+            unhelpfulFeedback: { type: integer, format: int64 }
+        performance:
+          type: object
+          properties:
+            averageLatencyMs: { type: number }
+            p50LatencyMs: { type: number }
+            p95LatencyMs: { type: number }
+            averageTtftMs: { type: number }
+            p95TtftMs: { type: number }
+        cost:
+          type: object
+          properties:
+            inputTokens: { type: integer, format: int64 }
+            outputTokens: { type: integer, format: int64 }
+            estimatedCostMicroRmb: { type: integer, format: int64 }
+            estimatedCostPerQuestionMicroRmb: { type: number }
+            cacheHits: { type: integer, format: int64 }
+            cacheHitRate: { type: number, minimum: 0, maximum: 1 }
+        routes:
+          type: array
+          items: { $ref: "#/components/schemas/CountMetric" }
+        errorCodes:
+          type: array
+          items: { $ref: "#/components/schemas/CountMetric" }
+        topQuestions:
+          type: array
+          items:
+            type: object
+            required: [question, count]
+            properties:
+              question: { type: string, maxLength: 200 }
+              count: { type: integer, format: int64 }
+        daily:
+          type: array
+          items:
+            type: object
+            required: [date, newUsers, activeUsers, questions, runs, completedRuns, failedRuns, estimatedCostMicroRmb]
+            properties:
+              date: { type: string, format: date }
+              newUsers: { type: integer, format: int64 }
+              activeUsers: { type: integer, format: int64 }
+              questions: { type: integer, format: int64 }
+              runs: { type: integer, format: int64 }
+              completedRuns: { type: integer, format: int64 }
+              failedRuns: { type: integer, format: int64 }
+              estimatedCostMicroRmb: { type: integer, format: int64 }
+    Attachment:
+      type: object
+      required: [name, url]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        url: { type: string, format: uri }
+        documentType: { type: string, examples: [PDF] }
+        parentPageUrl: { type: string, format: uri }
+    Source:
+      type: object
+      required: [id, title, publisher, department, publishedAt, audience, summary, url, official, attachments, evidence]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        publisher: { type: string }
+        department: { type: string }
+        publishedAt: { type: string, format: date-time }
+        audience: { type: string }
+        summary: { type: string }
+        url: { type: string, format: uri, description: "Preferred public open URL: official attachment, official page, then approved backup" }
+        official: { type: boolean }
+        officialUrl: { type: string, format: uri }
+        attachmentUrl: { type: string, format: uri }
+        parentPageUrl: { type: string, format: uri }
+        sourceType: { type: string }
+        documentType: { type: string }
+        authority: { type: string, examples: [OFFICIAL_DEPARTMENT] }
+        freshness: { type: string }
+        knowledgeBundleId: { type: string }
+        attachments:
+          type: array
+          items: { $ref: "#/components/schemas/Attachment" }
+        evidence:
+          type: array
+          items: { type: string }
+    Citation:
+      type: object
+      required: [citationId, index, sourceId, title, sourceName, department, publishDate, evidenceText, authority]
+      properties:
+        citationId: { type: string }
+        index: { type: integer, minimum: 1 }
+        sourceId: { type: string }
+        askuDocumentId: { type: string }
+        weknoraKnowledgeId: { type: string }
+        chunkId: { type: string }
+        title: { type: string }
+        sourceName: { type: string }
+        department: { type: string }
+        publishDate: { type: string, format: date-time }
+        sourceType: { type: string }
+        documentType: { type: string }
+        officialUrl: { type: string, format: uri }
+        attachmentUrl: { type: string, format: uri }
+        parentPageUrl: { type: string, format: uri }
+        evidenceText: { type: string, maxLength: 1201 }
+        authority: { type: string }
+        freshness: { type: string }
+        knowledgeBundleId: { type: string }
+    Message:
+      type: object
+      required: [id, sessionId, role, content, createdAt, citations, status]
+      properties:
+        id: { type: string }
+        sessionId: { type: string }
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+        sourceIds:
+          type: array
+          items: { type: string }
+        citations:
+          type: array
+          description: Backend-generated citation snapshots; source of truth for UI citation rendering
+          items: { $ref: "#/components/schemas/Citation" }
+        status: { type: string }
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+    adminBearerAuth:
+      type: http
+      scheme: bearer
+      description: Independent token from ASKU_ADMIN_TOKEN; user access tokens are not accepted.

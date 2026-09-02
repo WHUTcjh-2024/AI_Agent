@@ -5,6 +5,7 @@ import { colors, radius, spacing, typography } from '../../theme';
 import type { Feedback, Message, Source } from '../../types/domain';
 import { AnswerActions } from '../feedback/AnswerActions';
 import { SourceCard } from '../source/SourceCard';
+import { CitationPills } from '../source/CitationPills';
 import { MarkdownContent } from './MarkdownContent';
 import { StreamingCursor } from './StreamingCursor';
 
@@ -32,6 +33,7 @@ function ChatMessageComponent({ message, sources, feedback, onSourcePress, onFee
       <Text style={styles.answerLabel}>AskU</Text>
       <MarkdownContent value={message.content} />
       {message.status === 'streaming' ? <StreamingCursor /> : null}
+      {message.status === 'completed' ? <CitationPills citations={message.citations ?? []} onPress={onSourcePress} /> : null}
       {message.status === 'completed' && sources.length ? (
         <View style={styles.sources}>
           <Text style={styles.sourcesTitle}>参考来源</Text>

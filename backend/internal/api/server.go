@@ -19,15 +19,19 @@ import (
 )
 
 type Server struct {
-	store          Repository
-	cache          Cache
-	auth           Authenticator
-	runs           RunController
-	hub            EventHub
-	schools        SchoolRegistry
-	devAuthEnabled bool
-	allowedOrigins []string
-	runtime        RuntimeInfo
+	store             Repository
+	cache             Cache
+	auth              Authenticator
+	runs              RunController
+	hub               EventHub
+	schools           SchoolRegistry
+	devAuthEnabled    bool
+	allowedOrigins    []string
+	runtime           RuntimeInfo
+	policy            RuntimePolicy
+	admin             AdminReporter
+	adminToken        string
+	reportingTimeZone string
 }
 
 type RuntimeInfo struct {
@@ -38,8 +42,12 @@ type RuntimeInfo struct {
 	KnowledgeProvider string
 }
 
-func New(database Repository, redisCache Cache, authService Authenticator, runService RunController, hub EventHub, schools SchoolRegistry, devAuthEnabled bool, allowedOrigins []string, runtime RuntimeInfo) *Server {
-	return &Server{store: database, cache: redisCache, auth: authService, runs: runService, hub: hub, schools: schools, devAuthEnabled: devAuthEnabled, allowedOrigins: allowedOrigins, runtime: runtime}
+type RuntimePolicy struct {
+	QuestionRateLimitPerMinute int64
+}
+
+func New(database Repository, redisCache Cache, authService Authenticator, runService RunController, hub EventHub, schools SchoolRegistry, devAuthEnabled bool, allowedOrigins []string, runtime RuntimeInfo, policy RuntimePolicy, admin AdminOptions) *Server {
+	return &Server{store: database, cache: redisCache, auth: authService, runs: runService, hub: hub, schools: schools, devAuthEnabled: devAuthEnabled, allowedOrigins: allowedOrigins, runtime: runtime, policy: policy, admin: admin.Reporter, adminToken: strings.TrimSpace(admin.Token), reportingTimeZone: admin.TimeZone}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -66,6 +74,7 @@ func (s *Server) Handler() http.Handler {
 	protected.HandleFunc("POST /v1/dev/seed", s.handleDevSeed)
 
 	root := http.NewServeMux()
+	root.Handle("/v1/admin/", s.adminHandler())
 	root.Handle("/v1/", route(public, s.auth.Middleware(protected)))
 	root.Handle("/healthz", public)
 	root.Handle("/", public)
@@ -259,7 +268,7 @@ func (s *Server) handleSendMessage(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, r, badRequest("invalid_question", "问题不能为空，且不能超过 2000 个字符。"))
 		return
 	}
-	allowed, err := s.cache.AllowQuestion(r.Context(), user.ID, 30)
+	allowed, err := s.cache.AllowQuestion(r.Context(), user.ID, s.policy.QuestionRateLimitPerMinute)
 	if err != nil {
 		httpx.Error(w, r, err)
 		return
@@ -283,6 +292,11 @@ func (s *Server) handleSendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 	runRecord, message, err := s.runs.Start(r.Context(), user.ID, user.SchoolID, r.PathValue("id"), request.Question, request.UserMessageID)
 	if err != nil {
+		releaseContext, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		if releaseErr := s.cache.ReleaseIdempotency(releaseContext, user.ID, idempotencyKey); releaseErr != nil {
+			slog.Warn("release failed run idempotency reservation", "user_id", user.ID, "error", releaseErr)
+		}
 		s.writeStoreError(w, r, err, "对话不存在。")
 		return
 	}

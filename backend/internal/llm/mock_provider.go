@@ -28,6 +28,9 @@ func (p *MockProvider) Generate(ctx context.Context, request Request) (Response,
 		model = p.model
 	}
 	content := "AskU 的 LLM Gateway 已完成联调。\n\n当前使用 Mock Provider 验证模型适配、用量统计和错误隔离；尚未接入真实校园知识与正式大模型，因此不会生成未经核验的学校政策。"
+	if len(request.Messages) > 0 && strings.Contains(request.Messages[0].Content, "引用由后端根据真实证据统一生成") {
+		content = "已找到与问题相关的学校官方资料。\n\n当前使用 Mock Provider，不归纳具体政策、日期或条件；请通过下方引用核对学校原文。"
+	}
 	return Response{
 		Content: content,
 		Model:   model,

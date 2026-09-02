@@ -7,6 +7,7 @@ allowed_domains:
   - job.whut.edu.cn
 official_knowledge_base_id: ""
 community_knowledge_base_id: ""
+knowledge_version: "v1"
 source_tags:
   official: 官方
   department: 部门官网

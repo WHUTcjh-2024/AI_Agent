@@ -14,13 +14,14 @@ type User struct {
 }
 
 type Message struct {
-	ID        string    `json:"id"`
-	SessionID string    `json:"sessionId"`
-	Role      string    `json:"role"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"createdAt"`
-	SourceIDs []string  `json:"sourceIds,omitempty"`
-	Status    string    `json:"status"`
+	ID        string     `json:"id"`
+	SessionID string     `json:"sessionId"`
+	Role      string     `json:"role"`
+	Content   string     `json:"content"`
+	CreatedAt time.Time  `json:"createdAt"`
+	SourceIDs []string   `json:"sourceIds,omitempty"`
+	Citations []Citation `json:"citations"`
+	Status    string     `json:"status"`
 }
 
 type Session struct {
@@ -32,14 +33,57 @@ type Session struct {
 }
 
 type Source struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Publisher   string    `json:"publisher"`
-	PublishedAt time.Time `json:"publishedAt"`
-	Audience    string    `json:"audience"`
-	Summary     string    `json:"summary"`
-	URL         string    `json:"url"`
-	Official    bool      `json:"official"`
+	ID                string       `json:"id"`
+	Title             string       `json:"title"`
+	Publisher         string       `json:"publisher"`
+	Department        string       `json:"department"`
+	PublishedAt       time.Time    `json:"publishedAt"`
+	Audience          string       `json:"audience"`
+	Summary           string       `json:"summary"`
+	URL               string       `json:"url"`
+	Official          bool         `json:"official"`
+	OfficialURL       string       `json:"officialUrl,omitempty"`
+	AttachmentURL     string       `json:"attachmentUrl,omitempty"`
+	ParentPageURL     string       `json:"parentPageUrl,omitempty"`
+	SourceType        string       `json:"sourceType,omitempty"`
+	DocumentType      string       `json:"documentType,omitempty"`
+	Authority         string       `json:"authority,omitempty"`
+	Freshness         string       `json:"freshness,omitempty"`
+	KnowledgeBundleID string       `json:"knowledgeBundleId,omitempty"`
+	Attachments       []Attachment `json:"attachments"`
+	Evidence          []string     `json:"evidence"`
+}
+
+type Attachment struct {
+	ID            string `json:"id,omitempty"`
+	Name          string `json:"name"`
+	URL           string `json:"url"`
+	DocumentType  string `json:"documentType,omitempty"`
+	ParentPageURL string `json:"parentPageUrl,omitempty"`
+}
+
+// Citation is a backend-owned snapshot of the retrieval evidence used for an
+// answer. The LLM never creates IDs, indices or URLs.
+type Citation struct {
+	CitationID         string    `json:"citationId"`
+	Index              int       `json:"index"`
+	SourceID           string    `json:"sourceId"`
+	AskUDocumentID     string    `json:"askuDocumentId,omitempty"`
+	WeKnoraKnowledgeID string    `json:"weknoraKnowledgeId,omitempty"`
+	ChunkID            string    `json:"chunkId,omitempty"`
+	Title              string    `json:"title"`
+	SourceName         string    `json:"sourceName"`
+	Department         string    `json:"department"`
+	PublishDate        time.Time `json:"publishDate"`
+	SourceType         string    `json:"sourceType,omitempty"`
+	DocumentType       string    `json:"documentType,omitempty"`
+	OfficialURL        string    `json:"officialUrl,omitempty"`
+	AttachmentURL      string    `json:"attachmentUrl,omitempty"`
+	ParentPageURL      string    `json:"parentPageUrl,omitempty"`
+	EvidenceText       string    `json:"evidenceText"`
+	Authority          string    `json:"authority"`
+	Freshness          string    `json:"freshness,omitempty"`
+	KnowledgeBundleID  string    `json:"knowledgeBundleId,omitempty"`
 }
 
 type AgentRun struct {

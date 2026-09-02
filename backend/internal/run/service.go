@@ -25,7 +25,7 @@ func NewService(repository Repository, executor agent.Executor, hub *Hub, delays
 func (s *Service) Start(ctx context.Context, userID, schoolID, sessionID, question, userMessageID string) (domain.AgentRun, domain.Message, error) {
 	userMessage := domain.Message{
 		ID: userMessageID, SessionID: sessionID, Role: "user", Content: question,
-		CreatedAt: time.Now().UTC(), Status: "completed",
+		CreatedAt: time.Now().UTC(), Status: "completed", Citations: []domain.Citation{},
 	}
 	createdMessage, run, err := s.store.CreateUserMessageAndRun(ctx, userID, userMessage)
 	if err != nil {
@@ -84,12 +84,12 @@ func (s *Service) execute(ctx context.Context, userID, schoolID string, run doma
 
 	message := domain.Message{
 		ID: messageID, SessionID: run.SessionID, Role: "assistant", Content: result.Answer,
-		CreatedAt: time.Now().UTC(), Status: "completed",
+		CreatedAt: time.Now().UTC(), Status: "completed", Citations: result.Citations,
 	}
 	for _, source := range result.Sources {
 		message.SourceIDs = append(message.SourceIDs, source.ID)
 	}
-	message, err = s.store.CompleteAssistantMessage(ctx, userID, message, result.Sources)
+	message, err = s.store.CompleteAssistantMessage(ctx, userID, message, result.Sources, result.Citations)
 	if err != nil {
 		s.fail(run.ID, err)
 		return

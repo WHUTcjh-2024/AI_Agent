@@ -13,6 +13,7 @@ type Context struct {
 	AllowedDomains           []string          `yaml:"allowed_domains" json:"allowedDomains"`
 	OfficialKnowledgeBaseID  string            `yaml:"official_knowledge_base_id" json:"officialKnowledgeBaseId"`
 	CommunityKnowledgeBaseID string            `yaml:"community_knowledge_base_id" json:"communityKnowledgeBaseId"`
+	KnowledgeVersion         string            `yaml:"knowledge_version" json:"knowledgeVersion"`
 	SourceTags               map[string]string `yaml:"source_tags" json:"sourceTags"`
 }
 
@@ -29,8 +30,8 @@ func Load(path string) (*Registry, error) {
 	if err := yaml.Unmarshal(data, &context); err != nil {
 		return nil, fmt.Errorf("parse school config: %w", err)
 	}
-	if context.ID == "" || context.Name == "" || len(context.AllowedDomains) == 0 {
-		return nil, fmt.Errorf("school config must define school_id, school_name and allowed_domains")
+	if context.ID == "" || context.Name == "" || len(context.AllowedDomains) == 0 || context.KnowledgeVersion == "" {
+		return nil, fmt.Errorf("school config must define school_id, school_name, allowed_domains and knowledge_version")
 	}
 	return &Registry{current: context}, nil
 }
@@ -68,4 +69,12 @@ func (r *Registry) SchoolName(id string) (string, error) {
 		return "", fmt.Errorf("unknown school %q", id)
 	}
 	return context.Name, nil
+}
+
+func (r *Registry) KnowledgeVersion(id string) (string, error) {
+	context, ok := r.Get(id)
+	if !ok {
+		return "", fmt.Errorf("unknown school %q", id)
+	}
+	return context.KnowledgeVersion, nil
 }

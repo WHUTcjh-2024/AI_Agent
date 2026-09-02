@@ -1,0 +1,24 @@
+version: 1
+school_id: whut
+dimensions:
+  citation_coverage: "重要政策结论是否都有证据支持"
+  citation_correctness: "evidence_text 是否直接支持对应结论"
+  citation_authority: "是否优先正式文件和官方部门/学院来源"
+  citation_freshness: "是否默认使用最新有效版本并正确处理历史版本"
+questions:
+  - id: transfer-deadline
+    question: "今年转专业申请什么时候截止？"
+    must_have_citation: true
+    expected_authority: [OFFICIAL_DEPARTMENT, OFFICIAL_SCHOOL]
+    reject_if:
+      - "引用只说明工作将开展，但没有支持截止日期"
+      - "引用来源不是学校允许域名"
+  - id: library-hours
+    question: "图书馆今天几点关门？"
+    must_have_citation: true
+    expected_authority: [OFFICIAL_DEPARTMENT]
+    freshness_required: true
+  - id: unsupported-policy
+    question: "学校宿舍允许饲养宠物吗？"
+    must_have_citation: false
+    expected_behavior: "没有直接可靠证据时明确无法确认，citations 为空"

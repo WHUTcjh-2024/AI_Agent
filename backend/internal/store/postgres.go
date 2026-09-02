@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"asku/backend/internal/domain"
 	"asku/backend/internal/id"
+	"asku/backend/internal/knowledge"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -46,6 +49,74 @@ func Open(ctx context.Context, databaseURL string) (*Postgres, error) {
 func (p *Postgres) Close() { p.pool.Close() }
 
 func (p *Postgres) Ping(ctx context.Context) error { return p.pool.Ping(ctx) }
+
+// ResolveEvidence is the anti-corruption layer between WeKnora retrieval IDs
+// and crawler-owned source metadata. Internal storage paths are never selected.
+func (p *Postgres) ResolveEvidence(ctx context.Context, schoolID, knowledgeID string) (knowledge.DocumentMetadata, bool, error) {
+	var metadata knowledge.DocumentMetadata
+	var attachmentID, attachmentName, attachmentType, attachmentURL, attachmentParent string
+	err := p.pool.QueryRow(ctx, `
+		SELECT d.id,d.title,src.source_name,src.department,d.publish_date,
+		       src.source_type,d.document_type,src.official_url,src.canonical_url,
+		       COALESCE(a.id,''),COALESCE(a.name,''),COALESCE(a.document_type,''),
+		       COALESCE(a.attachment_original_url,''),
+		       COALESCE(NULLIF(a.parent_page_url,''),d.parent_page_url,''),
+		       COALESCE(NULLIF(d.parent_page_url,''),src.official_url,src.canonical_url,''),
+		       src.authority,d.freshness,d.knowledge_bundle_id
+		FROM knowledge.weknora_mappings wm
+		JOIN knowledge.documents d ON d.id=wm.asku_document_id AND d.school_id=wm.school_id
+		JOIN knowledge.sources src ON src.id=d.source_id AND src.school_id=wm.school_id
+		LEFT JOIN knowledge.attachments a ON a.id=wm.attachment_id AND a.document_id=d.id
+		WHERE wm.school_id=$1 AND wm.weknora_knowledge_id=$2
+		  AND wm.import_status='IMPORTED'
+		  AND d.rag_eligible=true AND d.pii_detected=false AND d.review_status='ACCEPTED'
+		  AND src.active=true
+		  AND (wm.attachment_id IS NULL OR (
+		      a.id IS NOT NULL AND a.rag_eligible=true AND a.pii_detected=false AND a.review_status='ACCEPTED'
+		  ))
+	`, schoolID, knowledgeID).Scan(
+		&metadata.AskUDocumentID, &metadata.Title, &metadata.SourceName, &metadata.Department, &metadata.PublishedAt,
+		&metadata.SourceType, &metadata.DocumentType, &metadata.OfficialURL, &metadata.CanonicalURL,
+		&attachmentID, &attachmentName, &attachmentType, &attachmentURL, &attachmentParent,
+		&metadata.ParentPageURL, &metadata.Authority, &metadata.Freshness, &metadata.KnowledgeBundleID,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return knowledge.DocumentMetadata{}, false, nil
+	}
+	if err != nil {
+		return knowledge.DocumentMetadata{}, false, err
+	}
+	metadata.AttachmentURL = attachmentURL
+	rows, err := p.pool.Query(ctx, `
+		SELECT id,name,document_type,attachment_original_url,
+		       COALESCE(NULLIF(parent_page_url,''),$2)
+		FROM knowledge.attachments
+		WHERE document_id=$1 AND rag_eligible=true AND pii_detected=false AND review_status='ACCEPTED'
+		ORDER BY created_at,id
+	`, metadata.AskUDocumentID, metadata.ParentPageURL)
+	if err != nil {
+		return knowledge.DocumentMetadata{}, false, err
+	}
+	defer rows.Close()
+	metadata.Attachments = []knowledge.Attachment{}
+	for rows.Next() {
+		var attachment knowledge.Attachment
+		if err := rows.Scan(&attachment.ID, &attachment.Name, &attachment.DocumentType, &attachment.URL, &attachment.ParentPageURL); err != nil {
+			return knowledge.DocumentMetadata{}, false, err
+		}
+		metadata.Attachments = append(metadata.Attachments, attachment)
+	}
+	if err := rows.Err(); err != nil {
+		return knowledge.DocumentMetadata{}, false, err
+	}
+	if attachmentID != "" && len(metadata.Attachments) == 0 {
+		metadata.Attachments = append(metadata.Attachments, knowledge.Attachment{
+			ID: attachmentID, Name: attachmentName, DocumentType: attachmentType,
+			URL: attachmentURL, ParentPageURL: attachmentParent,
+		})
+	}
+	return metadata, true, nil
+}
 
 // RecoverInterruptedRuns closes runs whose in-process worker disappeared after
 // a service restart. Durable workers can replace this policy in a later phase.
@@ -86,17 +157,49 @@ func (p *Postgres) Migrate(ctx context.Context) error {
 		return err
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin migration transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			version TEXT PRIMARY KEY,
+			applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)
+	`); err != nil {
+		return fmt.Errorf("prepare migration registry: %w", err)
+	}
+	// Serialize startup migrations across replicas. The transaction-scoped lock
+	// is released automatically on commit or rollback.
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext('asku_schema_migrations'))`); err != nil {
+		return fmt.Errorf("lock migrations: %w", err)
+	}
 	for _, entry := range entries {
 		if entry.IsDir() {
+			continue
+		}
+		version := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
+		var applied bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE version=$1)`, version).Scan(&applied); err != nil {
+			return fmt.Errorf("check migration %s: %w", entry.Name(), err)
+		}
+		if applied {
 			continue
 		}
 		data, err := migrations.ReadFile("migrations/" + entry.Name())
 		if err != nil {
 			return fmt.Errorf("read migration %s: %w", entry.Name(), err)
 		}
-		if _, err := p.pool.Exec(ctx, string(data)); err != nil {
+		if _, err := tx.Exec(ctx, string(data)); err != nil {
 			return fmt.Errorf("apply migration %s: %w", entry.Name(), err)
 		}
+		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations(version) VALUES($1) ON CONFLICT DO NOTHING`, version); err != nil {
+			return fmt.Errorf("record migration %s: %w", entry.Name(), err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit migrations: %w", err)
 	}
 	return nil
 }
@@ -198,6 +301,10 @@ func (p *Postgres) ListSessions(ctx context.Context, userID string) ([]domain.Se
 	if len(sessions) == 0 {
 		return sessions, nil
 	}
+	citationsByMessage, err := p.loadCitations(ctx, userID, "")
+	if err != nil {
+		return nil, err
+	}
 	messageRows, err := p.pool.Query(ctx, `
 		SELECT m.id,m.session_id,m.role,m.content,m.created_at,m.status,
 		       COALESCE(array_agg(ms.source_id ORDER BY ms.position) FILTER (WHERE ms.source_id IS NOT NULL), ARRAY[]::text[])
@@ -216,6 +323,10 @@ func (p *Postgres) ListSessions(ctx context.Context, userID string) ([]domain.Se
 		var message domain.Message
 		if err := messageRows.Scan(&message.ID, &message.SessionID, &message.Role, &message.Content, &message.CreatedAt, &message.Status, &message.SourceIDs); err != nil {
 			return nil, err
+		}
+		message.Citations = citationsByMessage[message.ID]
+		if message.Citations == nil {
+			message.Citations = []domain.Citation{}
 		}
 		if position, ok := positions[message.SessionID]; ok {
 			sessions[position].Messages = append(sessions[position].Messages, message)
@@ -251,6 +362,9 @@ func (p *Postgres) ClearSessions(ctx context.Context, userID string) error {
 }
 
 func (p *Postgres) CreateMessage(ctx context.Context, userID string, message domain.Message) (domain.Message, error) {
+	if message.Citations == nil {
+		message.Citations = []domain.Citation{}
+	}
 	if message.ID == "" {
 		message.ID = id.New("msg")
 	}
@@ -274,6 +388,9 @@ func (p *Postgres) CreateMessage(ctx context.Context, userID string, message dom
 // CreateUserMessageAndRun prevents a user message from being persisted without
 // its corresponding AgentRun when either insert fails.
 func (p *Postgres) CreateUserMessageAndRun(ctx context.Context, userID string, message domain.Message) (domain.Message, domain.AgentRun, error) {
+	if message.Citations == nil {
+		message.Citations = []domain.Citation{}
+	}
 	if message.ID == "" {
 		message.ID = id.New("msg")
 	}
@@ -310,7 +427,10 @@ func (p *Postgres) CreateUserMessageAndRun(ctx context.Context, userID string, m
 
 // CompleteAssistantMessage atomically persists the final answer and all source
 // links so history never exposes a partially attached answer.
-func (p *Postgres) CompleteAssistantMessage(ctx context.Context, userID string, message domain.Message, sources []domain.Source) (domain.Message, error) {
+func (p *Postgres) CompleteAssistantMessage(ctx context.Context, userID string, message domain.Message, sources []domain.Source, citations []domain.Citation) (domain.Message, error) {
+	if citations == nil {
+		citations = []domain.Citation{}
+	}
 	if message.ID == "" {
 		message.ID = id.New("msg")
 	}
@@ -335,11 +455,32 @@ func (p *Postgres) CompleteAssistantMessage(ctx context.Context, userID string, 
 	if _, err := tx.Exec(ctx, `UPDATE sessions SET updated_at=$1 WHERE id=$2`, message.CreatedAt, message.SessionID); err != nil {
 		return domain.Message{}, err
 	}
+	sourceIDs := make(map[string]struct{}, len(sources))
 	for position, source := range sources {
+		sourceIDs[source.ID] = struct{}{}
 		if _, err := tx.Exec(ctx, `INSERT INTO message_sources(message_id,source_id,position) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, message.ID, source.ID, position); err != nil {
 			return domain.Message{}, err
 		}
 	}
+	for _, citation := range citations {
+		if _, ok := sourceIDs[citation.SourceID]; !ok {
+			return domain.Message{}, fmt.Errorf("citation %q references a source outside the answer", citation.CitationID)
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO message_citations(
+				message_id,citation_id,citation_index,source_id,asku_document_id,weknora_knowledge_id,chunk_id,
+				title,source_name,department,publish_date,source_type,document_type,official_url,
+				attachment_url,parent_page_url,evidence_text,authority,freshness,knowledge_bundle_id
+			) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+		`, message.ID, citation.CitationID, citation.Index, citation.SourceID, citation.AskUDocumentID,
+			citation.WeKnoraKnowledgeID, citation.ChunkID, citation.Title, citation.SourceName, citation.Department,
+			citation.PublishDate, citation.SourceType, citation.DocumentType, citation.OfficialURL,
+			citation.AttachmentURL, citation.ParentPageURL, citation.EvidenceText, citation.Authority,
+			citation.Freshness, citation.KnowledgeBundleID); err != nil {
+			return domain.Message{}, err
+		}
+	}
+	message.Citations = citations
 	if err := tx.Commit(ctx); err != nil {
 		return domain.Message{}, err
 	}
@@ -347,6 +488,10 @@ func (p *Postgres) CompleteAssistantMessage(ctx context.Context, userID string, 
 }
 
 func (p *Postgres) ListMessages(ctx context.Context, userID, sessionID string) ([]domain.Message, error) {
+	citationsByMessage, err := p.loadCitations(ctx, userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := p.pool.Query(ctx, `
 		SELECT m.id,m.session_id,m.role,m.content,m.created_at,m.status,
 		       COALESCE(array_agg(ms.source_id ORDER BY ms.position) FILTER (WHERE ms.source_id IS NOT NULL), ARRAY[]::text[])
@@ -367,9 +512,45 @@ func (p *Postgres) ListMessages(ctx context.Context, userID, sessionID string) (
 		if err := rows.Scan(&message.ID, &message.SessionID, &message.Role, &message.Content, &message.CreatedAt, &message.Status, &message.SourceIDs); err != nil {
 			return nil, err
 		}
+		message.Citations = citationsByMessage[message.ID]
+		if message.Citations == nil {
+			message.Citations = []domain.Citation{}
+		}
 		messages = append(messages, message)
 	}
 	return messages, rows.Err()
+}
+
+func (p *Postgres) loadCitations(ctx context.Context, userID, sessionID string) (map[string][]domain.Citation, error) {
+	rows, err := p.pool.Query(ctx, `
+		SELECT mc.message_id,mc.citation_id,mc.citation_index,mc.source_id,mc.asku_document_id,
+		       mc.weknora_knowledge_id,mc.chunk_id,mc.title,mc.source_name,mc.department,mc.publish_date,
+		       mc.source_type,mc.document_type,mc.official_url,mc.attachment_url,mc.parent_page_url,
+		       mc.evidence_text,mc.authority,mc.freshness,mc.knowledge_bundle_id
+		FROM message_citations mc
+		JOIN messages m ON m.id=mc.message_id
+		JOIN sessions s ON s.id=m.session_id
+		WHERE s.user_id=$1 AND ($2='' OR s.id=$2)
+		ORDER BY mc.message_id,mc.citation_index
+	`, userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make(map[string][]domain.Citation)
+	for rows.Next() {
+		var messageID string
+		var citation domain.Citation
+		if err := rows.Scan(&messageID, &citation.CitationID, &citation.Index, &citation.SourceID,
+			&citation.AskUDocumentID, &citation.WeKnoraKnowledgeID, &citation.ChunkID, &citation.Title,
+			&citation.SourceName, &citation.Department, &citation.PublishDate, &citation.SourceType,
+			&citation.DocumentType, &citation.OfficialURL, &citation.AttachmentURL, &citation.ParentPageURL,
+			&citation.EvidenceText, &citation.Authority, &citation.Freshness, &citation.KnowledgeBundleID); err != nil {
+			return nil, err
+		}
+		result[messageID] = append(result[messageID], citation)
+	}
+	return result, rows.Err()
 }
 
 func (p *Postgres) CreateRun(ctx context.Context, sessionID string) (domain.AgentRun, error) {
@@ -455,12 +636,30 @@ func (p *Postgres) ListRunEvents(ctx context.Context, runID string, after int64)
 }
 
 func (p *Postgres) UpsertSource(ctx context.Context, schoolID string, source domain.Source) error {
+	attachments, err := json.Marshal(nonNilAttachments(source.Attachments))
+	if err != nil {
+		return err
+	}
+	evidence, err := json.Marshal(nonNilStrings(source.Evidence))
+	if err != nil {
+		return err
+	}
 	command, err := p.pool.Exec(ctx, `
-		INSERT INTO sources(id,school_id,title,publisher,published_at,audience,summary,url,official)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
-		ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,publisher=EXCLUDED.publisher,published_at=EXCLUDED.published_at,audience=EXCLUDED.audience,summary=EXCLUDED.summary,url=EXCLUDED.url,official=EXCLUDED.official,updated_at=now()
+		INSERT INTO sources(id,school_id,title,publisher,department,published_at,audience,summary,url,official,
+			official_url,attachment_url,parent_page_url,source_type,document_type,authority,freshness,
+			knowledge_bundle_id,attachments,evidence)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+		ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,publisher=EXCLUDED.publisher,department=EXCLUDED.department,
+			published_at=EXCLUDED.published_at,audience=EXCLUDED.audience,summary=EXCLUDED.summary,url=EXCLUDED.url,
+			official=EXCLUDED.official,official_url=EXCLUDED.official_url,attachment_url=EXCLUDED.attachment_url,
+			parent_page_url=EXCLUDED.parent_page_url,source_type=EXCLUDED.source_type,document_type=EXCLUDED.document_type,
+			authority=EXCLUDED.authority,freshness=EXCLUDED.freshness,knowledge_bundle_id=EXCLUDED.knowledge_bundle_id,
+			attachments=EXCLUDED.attachments,evidence=EXCLUDED.evidence,updated_at=now()
 		WHERE sources.school_id=EXCLUDED.school_id
-	`, source.ID, schoolID, source.Title, source.Publisher, source.PublishedAt, source.Audience, source.Summary, source.URL, source.Official)
+	`, source.ID, schoolID, source.Title, source.Publisher, source.Department, source.PublishedAt, source.Audience,
+		source.Summary, source.URL, source.Official, source.OfficialURL, source.AttachmentURL, source.ParentPageURL,
+		source.SourceType, source.DocumentType, source.Authority, source.Freshness, source.KnowledgeBundleID,
+		attachments, evidence)
 	if err == nil && command.RowsAffected() == 0 {
 		return fmt.Errorf("source %q belongs to a different school", source.ID)
 	}
@@ -477,8 +676,11 @@ func (p *Postgres) AttachSources(ctx context.Context, messageID string, sources 
 }
 
 func (p *Postgres) GetSource(ctx context.Context, sourceID string) (domain.Source, error) {
-	var source domain.Source
-	err := p.pool.QueryRow(ctx, `SELECT id,title,publisher,published_at,audience,summary,url,official FROM sources WHERE id=$1`, sourceID).Scan(&source.ID, &source.Title, &source.Publisher, &source.PublishedAt, &source.Audience, &source.Summary, &source.URL, &source.Official)
+	source, err := scanSource(p.pool.QueryRow(ctx, `
+		SELECT id,title,publisher,department,published_at,audience,summary,url,official,official_url,
+		       attachment_url,parent_page_url,source_type,document_type,authority,freshness,
+		       knowledge_bundle_id,attachments,evidence FROM sources WHERE id=$1
+	`, sourceID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.Source{}, ErrNotFound
 	}
@@ -486,16 +688,54 @@ func (p *Postgres) GetSource(ctx context.Context, sourceID string) (domain.Sourc
 }
 
 func (p *Postgres) GetSourceForUser(ctx context.Context, userID, sourceID string) (domain.Source, error) {
-	var source domain.Source
-	err := p.pool.QueryRow(ctx, `
-		SELECT s.id,s.title,s.publisher,s.published_at,s.audience,s.summary,s.url,s.official
+	source, err := scanSource(p.pool.QueryRow(ctx, `
+		SELECT s.id,s.title,s.publisher,s.department,s.published_at,s.audience,s.summary,s.url,s.official,s.official_url,
+		       s.attachment_url,s.parent_page_url,s.source_type,s.document_type,s.authority,s.freshness,
+		       s.knowledge_bundle_id,s.attachments,s.evidence
 		FROM sources s JOIN users u ON u.current_school_id=s.school_id
 		WHERE s.id=$1 AND u.id=$2 AND u.status='active'
-	`, sourceID, userID).Scan(&source.ID, &source.Title, &source.Publisher, &source.PublishedAt, &source.Audience, &source.Summary, &source.URL, &source.Official)
+	`, sourceID, userID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.Source{}, ErrNotFound
 	}
 	return source, err
+}
+
+type scanner interface{ Scan(dest ...any) error }
+
+func scanSource(row scanner) (domain.Source, error) {
+	var source domain.Source
+	var attachments, evidence []byte
+	err := row.Scan(&source.ID, &source.Title, &source.Publisher, &source.Department, &source.PublishedAt,
+		&source.Audience, &source.Summary, &source.URL, &source.Official, &source.OfficialURL,
+		&source.AttachmentURL, &source.ParentPageURL, &source.SourceType, &source.DocumentType,
+		&source.Authority, &source.Freshness, &source.KnowledgeBundleID, &attachments, &evidence)
+	if err != nil {
+		return domain.Source{}, err
+	}
+	if err := json.Unmarshal(attachments, &source.Attachments); err != nil {
+		return domain.Source{}, err
+	}
+	if err := json.Unmarshal(evidence, &source.Evidence); err != nil {
+		return domain.Source{}, err
+	}
+	source.Attachments = nonNilAttachments(source.Attachments)
+	source.Evidence = nonNilStrings(source.Evidence)
+	return source, nil
+}
+
+func nonNilAttachments(value []domain.Attachment) []domain.Attachment {
+	if value == nil {
+		return []domain.Attachment{}
+	}
+	return value
+}
+
+func nonNilStrings(value []string) []string {
+	if value == nil {
+		return []string{}
+	}
+	return value
 }
 
 func (p *Postgres) CreateFeedback(ctx context.Context, userID, messageID, value string) (domain.Feedback, error) {

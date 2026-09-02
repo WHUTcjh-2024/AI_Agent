@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -50,7 +51,10 @@ func (p *progressRecorder) MessageDelta(_ context.Context, delta string) error {
 type searchStub struct{}
 
 func (searchStub) Gather(context.Context, websearch.Request) (websearch.Response, error) {
-	return websearch.Response{Evidence: []websearch.Evidence{{ID: "src_1", Title: "官方通知", URL: "https://whut.edu.cn/", Publisher: "武汉理工大学", PublishedAt: time.Now(), Official: true}}, Stats: websearch.Stats{PagesFetched: 1}}, nil
+	return websearch.Response{Evidence: []websearch.Evidence{{
+		ID: "src_1", Title: "官方通知", URL: "https://whut.edu.cn/", Publisher: "武汉理工大学",
+		PublishedAt: time.Now(), Excerpt: "学校官网发布的可核验证据。", Official: true,
+	}}, Stats: websearch.Stats{PagesFetched: 1}}, nil
 }
 
 type generatorStub struct{}
@@ -92,6 +96,9 @@ func TestOrchestratorOwnsSearchCompositionAndProgressOrder(t *testing.T) {
 	}
 	if result.Answer == "" || len(progress.deltas) == 0 {
 		t.Fatal("orchestrator must stream the controlled answer")
+	}
+	if len(result.Citations) != 1 || result.Citations[0].Index != 1 || result.Citations[0].SourceID != result.Sources[0].ID {
+		t.Fatalf("web evidence must produce a structured citation: %#v", result.Citations)
 	}
 }
 
@@ -160,17 +167,30 @@ func TestPolicyOrchestratorUsesKnowledgeBeforeGeneration(t *testing.T) {
 	if result.Answer != "模型回答" || progress.metadata["knowledgeStats"] == nil {
 		t.Fatalf("knowledge-grounded generation did not complete: %#v", result)
 	}
+	if len(result.Citations) != 1 || result.Citations[0].Index != 1 || result.Citations[0].ChunkID != "chunk-1" {
+		t.Fatalf("structured citation was not built from retrieval evidence: %#v", result.Citations)
+	}
 }
 
-type answerCacheStub struct{ answer CachedAnswer }
+type answerCacheStub struct {
+	answer CachedAnswer
+	stored *CachedAnswer
+}
 
-func (c answerCacheStub) Lookup(context.Context, string, string) (CachedAnswer, bool, error) {
+func (c *answerCacheStub) Lookup(context.Context, string, string) (CachedAnswer, bool, error) {
 	return c.answer, true, nil
+}
+func (c *answerCacheStub) Store(_ context.Context, _, _ string, answer CachedAnswer) error {
+	c.stored = &answer
+	return nil
 }
 
 func TestAnswerCacheHitBypassesExternalCapabilities(t *testing.T) {
 	capabilities := testCapabilities(nil)
-	capabilities.AnswerCache = answerCacheStub{answer: CachedAnswer{Answer: "缓存中的已核验答案"}}
+	capabilities.AnswerCache = &answerCacheStub{answer: CachedAnswer{
+		Answer: "缓存中的已核验答案", Sources: []domain.Source{{ID: "src-cache", Official: true}},
+		Citations: []domain.Citation{{CitationID: "cit-cache", Index: 1, SourceID: "src-cache", Title: "校历", EvidenceText: "校历内容", Authority: "OFFICIAL_DEPARTMENT", OfficialURL: "https://www.whut.edu.cn"}},
+	}}
 	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
 	if err != nil {
 		t.Fatal(err)
@@ -185,6 +205,52 @@ func TestAnswerCacheHitBypassesExternalCapabilities(t *testing.T) {
 	}
 	if progress.metadata["cacheHit"] != true {
 		t.Fatalf("cache metadata missing: %#v", progress.metadata)
+	}
+}
+
+func TestKnowledgeAnswerIsStoredAfterGroundedGeneration(t *testing.T) {
+	answerCache := &answerCacheStub{}
+	capabilities := testCapabilities(generatorStub{})
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.AnswerCache = answerCache
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = orchestrator.Execute(context.Background(), ExecutionRequest{
+		SchoolID: "whut", Question: "奖学金怎么评？", RunID: "run",
+	}, &progressRecorder{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if answerCache.stored == nil || answerCache.stored.Answer != "模型回答" || len(answerCache.stored.Sources) != 1 {
+		t.Fatalf("grounded knowledge answer was not cached: %#v", answerCache.stored)
+	}
+}
+
+type failingAnswerCache struct{}
+
+func (failingAnswerCache) Lookup(context.Context, string, string) (CachedAnswer, bool, error) {
+	return CachedAnswer{}, false, errors.New("redis read failed")
+}
+
+func (failingAnswerCache) Store(context.Context, string, string, CachedAnswer) error {
+	return errors.New("redis write failed")
+}
+
+func TestAnswerCacheFailureDoesNotFailGroundedAnswer(t *testing.T) {
+	capabilities := testCapabilities(generatorStub{})
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.AnswerCache = failingAnswerCache{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{
+		SchoolID: "whut", Question: "奖学金怎么评？", RunID: "run",
+	}, &progressRecorder{})
+	if err != nil || result.Answer != "模型回答" {
+		t.Fatalf("cache failure blocked grounded answer: result=%#v err=%v", result, err)
 	}
 }
 

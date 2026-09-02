@@ -27,6 +27,7 @@ type Cache interface {
 	Ping(ctx context.Context) error
 	AllowQuestion(ctx context.Context, userID string, limit int64) (bool, error)
 	ReserveIdempotency(ctx context.Context, userID, key string) (bool, error)
+	ReleaseIdempotency(ctx context.Context, userID, key string) error
 }
 
 type Authenticator interface {

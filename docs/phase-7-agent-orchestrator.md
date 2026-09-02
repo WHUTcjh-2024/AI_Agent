@@ -6,7 +6,7 @@ Phase 7 把原来的联调 `MockRouter` 升级为正式产品路由，并保持 
 
 ```text
 Question
-  → AnswerCache port（Phase 8 接 Redis）
+  → AnswerCache port（Phase 8 已接版本化 Redis Cache）
   → PolicyRouter
       ├─ controlled：产品说明等确定性回答
       ├─ knowledge：稳定校园信息 → KnowledgeEngine
@@ -23,7 +23,7 @@ Question
 - `knowledge.Searcher`：Agent 依赖的稳定知识检索端口。
 - `knowledge.Gateway`：把 `school_id` 映射为该校官方知识库 ID，并生成学校隔离的 Source ID。
 - `knowledge.WeKnoraProvider`：只负责 WeKnora HTTP 协议、认证和响应映射。
-- `agent.AnswerCache`：Phase 8 的扩展端口；缓存故障必须 fail-open。
+- `agent.AnswerCache`：由 Phase 8 的版本化缓存实现；缓存故障必须 fail-open。
 - `cmd/api/main.go`：唯一知道具体 Adapter 的组合根。
 
 Knowledge Gateway 会统一丢弃缺少知识 ID/正文的供应商结果，并仅保留当前学校官方域名白名单内的原文链接；这组规则不依赖 WeKnora，替换检索供应商后仍然有效。
@@ -82,6 +82,6 @@ run.completed
 
 `controlled` 路径不会伪造检索状态，直接从 `route.resolved` 进入 `generation.started`。
 
-## Phase 8 接入点
+## Phase 8 接入结果
 
-实现 `agent.AnswerCache`，在组合根注入即可。缓存 Key 必须包含 `school_id`、知识版本和规范化问题；只缓存已有可靠来源且通过时效规则的答案。Agent、Run、API、SSE 和移动端不需要重写。
+`agent.VersionedAnswerCache` 已在组合根注入。缓存 Key 包含 `school_id`、知识版本和规范化问题；只缓存带官方来源的 Knowledge 答案。Run、API、SSE 和移动端无需修改。

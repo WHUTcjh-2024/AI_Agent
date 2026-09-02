@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { chunkAnswer, getScenarioDefinition, resolveScenario } from '../../mocks/scenarios';
-import { getMockSourceById } from '../../mocks/sources';
+import { createMockCitations, getMockSourceById } from '../../mocks/sources';
 import type { AgentRun, ChatEvent, Feedback, Message, Session, Source } from '../../types/domain';
 import { createId } from '../../utils/id';
 import type { ChatService, StreamMessageRequest } from './ChatService';
@@ -57,6 +57,11 @@ function seedSessions(): Session[] {
           content: getScenarioDefinition('转专业').answer,
           createdAt: isoHoursAgo(2),
           sourceIds: ['source_transfer_2026', 'source_transfer_policy', 'source_transfer_school'],
+          citations: createMockCitations([
+            getMockSourceById('source_transfer_2026')!,
+            getMockSourceById('source_transfer_policy')!,
+            getMockSourceById('source_transfer_school')!,
+          ]),
           status: 'completed',
         },
       ],
@@ -170,6 +175,7 @@ export class MockChatService implements ChatService {
         content: answer,
         createdAt: new Date().toISOString(),
         sourceIds: definition.sources.map((source) => source.id),
+        citations: scenario === 'no_reliable_source' ? [] : createMockCitations(definition.sources),
         status: 'completed',
       };
       session.messages.push(completedMessage);

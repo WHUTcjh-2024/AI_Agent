@@ -25,6 +25,16 @@ func TestPolicyRouterUsesWebForFreshQuestion(t *testing.T) {
 	}
 }
 
+func TestPolicyRouterUsesWebForDocumentedIntegrationProbe(t *testing.T) {
+	plan, err := NewPolicyRouter().Plan(context.Background(), Request{Question: "官网搜索测试"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if plan.Route != "web_search" || plan.Search == nil || plan.Knowledge != nil || plan.Reason != "integration_probe_requires_official_search" {
+		t.Fatalf("documented integration probe must route to web search: %#v", plan)
+	}
+}
+
 func TestPolicyRouterHandlesProductIntroductionWithoutExternalCall(t *testing.T) {
 	plan, err := NewPolicyRouter().Plan(context.Background(), Request{Question: "你能做什么？"})
 	if err != nil {

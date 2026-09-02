@@ -12,15 +12,17 @@ import (
 )
 
 type Plan struct {
-	Answer     string
-	Sources    []domain.Source
-	Chunks     []string
-	Fail       bool
-	Generation *llm.Request
-	Knowledge  *knowledge.Request
-	Search     *websearch.Request
-	Route      string
-	Reason     string
+	Answer            string
+	Sources           []domain.Source
+	Chunks            []string
+	Fail              bool
+	Generation        *llm.Request
+	Knowledge         *knowledge.Request
+	Search            *websearch.Request
+	KnowledgeEvidence []knowledge.Evidence
+	SearchEvidence    []websearch.Evidence
+	Route             string
+	Reason            string
 }
 
 type Router interface {
@@ -60,7 +62,11 @@ func (m *MockRouter) Plan(ctx context.Context, request Request) (Plan, error) {
 		sources := []domain.Source{
 			{
 				ID: "src_dev_whut_undergraduate", Title: "武汉理工大学本科生院（联调入口）", Publisher: "武汉理工大学本科生院",
-				PublishedAt: time.Date(2026, 8, 31, 0, 0, 0, 0, time.UTC), Audience: "本科生", Summary: "联调用来源，便于验证来源展示和原文跳转；不代表具体政策通知。", URL: "https://jwc.whut.edu.cn/", Official: true,
+				Department: "武汉理工大学本科生院", PublishedAt: time.Date(2026, 8, 31, 0, 0, 0, 0, time.UTC),
+				Audience: "本科生", Summary: "联调用来源，便于验证来源展示和原文跳转；不代表具体政策通知。",
+				URL: "https://jwc.whut.edu.cn/", OfficialURL: "https://jwc.whut.edu.cn/", Official: true,
+				SourceType: "OFFICIAL_WEB", DocumentType: "HTML", Authority: "OFFICIAL_DEPARTMENT",
+				Attachments: []domain.Attachment{}, Evidence: []string{},
 			},
 		}
 		return Plan{Answer: answer, Sources: sources, Chunks: ChunkAnswer(answer), Route: "controlled", Reason: "verified_fixture"}, nil

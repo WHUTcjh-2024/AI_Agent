@@ -1,4 +1,10 @@
-# AskU Frontend Architecture V0.5
+# AskU Frontend Architecture V0.9
+
+## Citation Source of Truth
+
+`message.completed.message.citations` 是引用唯一事实源。`ChatMessage` 只把结构化 Citation 交给 `CitationPills`，点击后按 `sourceId` 导航到 Source Detail；禁止从 Markdown 正文正则提取 `[1]`。`sources.updated` 仅用于生成过程和来源预览。
+
+Source Detail 支持官方网页、官方附件和 parent page。内部文件路径不属于前端 Domain，也不允许通过 Mock/API Adapter 传入。
 
 ## Dependency flow
 
@@ -60,4 +66,4 @@ Unexpected EOF before a terminal event is treated as a reconnectable failure. A 
 
 ## Current boundary
 
-V0.5 validates architecture and end-to-end integration. Search and LLM providers still default to labelled Mock adapters, so current answers are not official policy results. Native iOS archive requires macOS and Xcode.
+V0.9 completes the citation trust chain and end-to-end integration. Knowledge retrieval is disabled by default, while Search and LLM providers default to explicitly labelled Mock adapters; production must configure real providers before answers can be treated as official policy results. Native iOS archive requires macOS and Xcode.

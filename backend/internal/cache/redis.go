@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -69,5 +70,17 @@ func (r *Redis) ReserveIdempotency(ctx context.Context, userID, key string) (boo
 	if key == "" {
 		return true, nil
 	}
-	return r.client.SetNX(ctx, "idem:"+userID+":"+key, "1", 10*time.Minute).Result()
+	return r.client.SetNX(ctx, idempotencyCacheKey(userID, key), "1", 10*time.Minute).Result()
+}
+
+func (r *Redis) ReleaseIdempotency(ctx context.Context, userID, key string) error {
+	if key == "" {
+		return nil
+	}
+	return r.client.Del(ctx, idempotencyCacheKey(userID, key)).Err()
+}
+
+func idempotencyCacheKey(userID, requestKey string) string {
+	digest := sha256.Sum256([]byte(requestKey))
+	return fmt.Sprintf("idem:%s:%x", userID, digest[:16])
 }

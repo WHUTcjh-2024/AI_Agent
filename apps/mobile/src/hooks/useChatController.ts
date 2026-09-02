@@ -34,7 +34,10 @@ export function useChatController({ initialSessionId, initialQuestion }: Options
         if (!active) return;
         if (!session) { setError('这条历史对话不存在。'); return; }
         setMessages(session.messages);
-        const ids = Array.from(new Set(session.messages.flatMap((message) => message.sourceIds ?? [])));
+        const ids = Array.from(new Set(session.messages.flatMap((message) => [
+          ...(message.sourceIds ?? []),
+          ...(message.citations ?? []).map((citation) => citation.sourceId),
+        ])));
         const loaded = await Promise.allSettled(ids.map((id) => chat.getSource(id)));
         if (!active) return;
         const available = loaded

@@ -44,7 +44,7 @@ page:{url_sha256}                    默认 30 分钟
 extract:{query_url_sha256}           默认 30 分钟
 ```
 
-缓存不可用时搜索链路 fail-open；Provider 或页面抓取错误不会被缓存。Phase 8 再增加答案缓存、限流与预算控制。
+缓存不可用时搜索链路 fail-open；Provider 或页面抓取错误不会被缓存。答案缓存与限流已在 Phase 8 通过独立端口接入。
 
 ## 配置
 

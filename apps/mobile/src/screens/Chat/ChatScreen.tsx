@@ -74,7 +74,8 @@ export function ChatScreen() {
     if (item.type === 'status' && stage) return <AgentStatus sourceCount={sourceCount} stage={stage} />;
     if (item.type === 'error') return <ErrorState message={error ?? '生成失败'} onRetry={() => { void sendQuestion(lastQuestion); }} />;
     if (item.type === 'message') {
-      const messageSources = (item.message.sourceIds ?? []).map((id) => sources[id]).filter(Boolean);
+      const sourceIds = [...(item.message.sourceIds ?? []), ...(item.message.citations ?? []).map((citation) => citation.sourceId)];
+      const messageSources = Array.from(new Set(sourceIds)).map((id) => sources[id]).filter(Boolean);
       return (
         <ChatMessage
           feedback={feedback[item.message.id]}

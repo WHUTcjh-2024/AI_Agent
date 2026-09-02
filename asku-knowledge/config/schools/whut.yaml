@@ -1,0 +1,69 @@
+# SchoolConfig — 武汉理工大学
+#
+# §0 反硬编码约定：学校差异只允许出现在本文件、sources.yaml、taxonomy.yaml 中。
+# 代码里不得散落 "武汉理工大学" / "WHUT" / "whut.edu.cn" / 知识库 ID / 官网列表。
+# 未来新增学校 = 新增本文件 + 新增 SourceRegistry + 新增知识数据，
+# 不复制 Crawler / Backend / Agent。
+#
+# 一致性约束：allowed_domains 必须是 backend config/schools/whut.yaml 的超集，
+# 由 tests/test_contract.py 断言，防止两边漂移。
+
+school_id: whut
+school_name: 武汉理工大学
+short_name: WHUT
+
+# 官方域名后缀。命中后缀的子域视为官方来源，可由 Discovery 自动登记。
+# 未命中后缀的外站链接只记录为 candidate_sources，不自动抓取（约束 #3）。
+domain_suffixes:
+  - whut.edu.cn
+
+# 允许的官方域名（与 backend config/schools/whut.yaml 对齐）
+allowed_domains:
+  - whut.edu.cn
+  - www.whut.edu.cn
+  - jwc.whut.edu.cn
+  - lib.whut.edu.cn
+  - job.whut.edu.cn
+
+# 明确禁止抓取的域名/路径（登录页、邮箱、私有系统等）
+forbidden_domains:
+  - mail.whut.edu.cn        # 邮箱登录，属登录页面，禁止访问
+  - vpn.whut.edu.cn         # VPN 登录
+  - yz.whut.edu.cn          # 邮件/认证类
+forbidden_path_patterns:
+  - "/login"
+  - "/signin"
+  - "/sso"
+  - "/cas/"
+  - "/auth/"
+  - "/verifycode"
+  - "/captcha"
+  - "/checkcode"
+  - "login.jsp"
+  - "login.aspx"
+  - "/admin/"
+  - "/manage/"
+  - "/oa/"
+
+# 知识库标识（§24：第一版一个官方知识库）
+official_knowledge_base_id: ""
+community_knowledge_base_id: ""
+knowledge_version: "v1"
+
+# 学历层次与受众
+education_levels:
+  - UNDERGRADUATE
+  - GRADUATE
+  - BOTH
+  - PROSPECTIVE
+  - UNKNOWN
+
+# 学年/学期推断基准（用于 academic_year / semester 抽取）
+academic_calendar:
+  # 秋季学期起始月份，春季学期为 2 月
+  autumn_start_month: 9
+  spring_start_month: 2
+
+# 采集起始种子（必须是官方域名；Discovery 从这里出发自动发现）
+seeds:
+  - https://www.whut.edu.cn/

@@ -1,0 +1,192 @@
+# Campus Knowledge Pipeline - 运行时策略与硬性预算
+#
+# 设计原则（对应 loop.doc §29、§33 与用户约束 #4）：
+#   - 绝不允许无限 BFS。任何一项预算触顶都必须保存 Checkpoint 后正常退出。
+#   - 所有预算都是"上限"，达到即停，不做自动扩容。
+#   - 单 host 并发 <= 3，绝不影响学校官网正常运行。
+
+version: 1
+
+# ---------------------------------------------------------------
+# 一、硬性预算（约束 #4）
+# 达到任意一项即保存 checkpoint 并优雅退出，不得无限扩展 BFS
+# ---------------------------------------------------------------
+budgets:
+  # 本轮最多处理的 URL 总数（含失败重试以外的所有 fetch）
+  max_urls_total: 20000
+  # 单个 Source（一个子站点）最多处理的 URL 数
+  # 防止某个大型新闻站吃掉整轮额度
+  max_urls_per_source: 1500
+  # BFS 最大深度（种子页 depth=0）
+  max_depth: 6
+  # 单轮最长运行时间，支持 30m / 8h / 45s
+  max_runtime: 8h
+  # 本轮 data/ 目录允许占用的磁盘上限
+  max_disk_usage: 20GB
+  # 单个下载文件（网页或附件）的大小上限，超过即放弃下载并标记
+  max_file_size: 50MB
+
+# ---------------------------------------------------------------
+# 二、抓取礼仪（§33 请求速率与安全）
+# ---------------------------------------------------------------
+fetch:
+  user_agent: "AskU-Knowledge-Pipeline/1.0 (campus knowledge collection; contact: asku-dev)"
+  # 单 host 并发上限（§33 明确要求 <= 3）
+  concurrency_per_host: 3
+  # 全局并发上限
+  concurrency_total: 8
+  # 同一 host 两次请求之间的最小间隔（秒）
+  min_interval_per_host: 0.8
+  # 随机抖动上限，避免形成固定节拍
+  jitter_seconds: 0.4
+  timeout_seconds: 25
+  # 最多 3 次 retry + exponential backoff
+  max_retries: 3
+  backoff_base_seconds: 1.5
+  backoff_max_seconds: 30
+  # 服务器压力信号：429 / 大量 5xx / 明显变慢 → 自动降速
+  pressure:
+    # 连续出现多少次 429/5xx 判定为压力
+    error_streak_threshold: 5
+    # 压力状态下把请求间隔乘以该系数
+    slow_down_factor: 4.0
+    # 压力解除前需要连续成功多少次
+    recovery_streak: 10
+  # 是否只有 JS 必须执行且页面高价值时才用浏览器（§34）
+  browser_enabled: false
+
+# ---------------------------------------------------------------
+# 三、robots.txt（§33）
+# ---------------------------------------------------------------
+robots:
+  enabled: true
+  # 取不到 robots.txt 时的默认策略（404 视为允许，但保持保守限速）
+  on_missing: allow
+  # 即使 robots 允许，也始终遵守的最小 crawl-delay
+  min_crawl_delay_seconds: 0.5
+
+# ---------------------------------------------------------------
+# 四、附件（§12 附件是一等公民）
+# ---------------------------------------------------------------
+attachments:
+  enabled: true
+  # 保留原文件交给 WeKnora 解析，不重复造 parser（§2、§14）
+  allowed_extensions:
+    - pdf
+    - doc
+    - docx
+    - xls
+    - xlsx
+    - ppt
+    - pptx
+    - csv
+    - txt
+    - zip
+  # 命中这些关键词的链接，即使没有扩展名也尝试探测（老 CMS download.jsp 等）
+  url_hint_patterns:
+    - "download"
+    - "attach"
+    - "upload"
+    - "file"
+    - "files"
+    - "fujian"
+    - '\.jsp\?'
+    - "getfile"
+    - 'down\.asp'
+  # 通过 Content-Type / Content-Disposition / magic bytes 二次确认
+  detect_by_content: true
+
+# ---------------------------------------------------------------
+# 五、分类（§20 禁止每篇都调 LLM）
+# ---------------------------------------------------------------
+classification:
+  # 规则链：source_context → url → breadcrumb → title → keywords → structure
+  strategy: rule_first
+  auto_accept_threshold: 0.85   # >= 0.85 自动接受
+  review_threshold: 0.60        # 0.60 - 0.85 → REVIEW
+  # < 0.60 → UNCERTAIN，不猜
+  # LLM 只在低置信度时兜底；未配置 LLM 时直接标记 UNCERTAIN，绝不编造
+  llm_fallback:
+    enabled: false
+    provider: ""
+
+# ---------------------------------------------------------------
+# 六、质量门（§22、§23）
+# ---------------------------------------------------------------
+quality:
+  weights:
+    authority: 25
+    student_relevance: 25
+    content_completeness: 15
+    attachment_completeness: 10
+    metadata_completeness: 10
+    freshness_confidence: 10
+    citation_traceability: 5
+  bands:
+    high_quality: 80    # >= 80 HIGH_QUALITY
+    usable: 70          # 70-79 USABLE
+    review: 50          # 50-69 REVIEW；< 50 NO_RAG
+  # 热门主题（P0）采用更严格标准（§22 末段）
+  hot_topic_bonus_threshold: 5
+  hot_topics:
+    - recommendation
+    - transfer_major
+    - scholarship
+    - comprehensive_evaluation
+    - cet
+    - graduate_degree
+    - thesis_review
+
+# ---------------------------------------------------------------
+# 七、阶段报告（约束 #7）
+# ---------------------------------------------------------------
+reporting:
+  # 每 N 秒或每 N 个 URL 输出一次阶段报告，两者满足其一即触发
+  interval_seconds: 1800          # 30 分钟
+  every_n_urls: 500
+  stage_dir: reports/stages
+
+# ---------------------------------------------------------------
+# 八、Coverage 驱动循环（§29、约束 #7）
+# ---------------------------------------------------------------
+coverage:
+  # 连续多少轮没有"实质提升"就停止自动扩展
+  stall_rounds: 2
+  # 提升幅度小于该阈值视为无实质提升（覆盖率百分点）
+  min_improvement: 1.0
+  # 每轮最多新增的定向采集 URL 数
+  max_targeted_urls_per_round: 400
+
+# ---------------------------------------------------------------
+# 九、PII 保护（约束 #5）
+# ---------------------------------------------------------------
+pii:
+  enabled: true
+  # 命中即 PII_REVIEW + NO_RAG，禁止进入 WeKnora
+  action: block
+  review_status: PII_REVIEW
+  rag_eligible: false
+
+# ---------------------------------------------------------------
+# 十、WeKnora（§2 WeKnora First、§26 Importer、§27 Canary）
+# ---------------------------------------------------------------
+weknora:
+  base_url: "http://localhost:8080"
+  api_key_env: WEKNORA_API_KEY
+  timeout_seconds: 60
+  # 第一版只用一个官方知识库 + Tags，不按主题拆库（§24）
+  knowledge_base_name: "AskU-WHUT-Official"
+  # Canary 通过前禁止全量导入（约束 #2）
+  canary_required: true
+  canary_requirements:
+    html_or_markdown: 10
+    pdf: 10
+    docx: 5
+    excel: 5
+    knowledge_bundles: 3
+    topic_recommendation: 3
+    topic_transfer_major: 3
+    topic_graduate: 3
+    version_history_series: 2
+  # 幂等：同一 document_id + file_hash 禁止重复上传（§26）
+  idempotent: true

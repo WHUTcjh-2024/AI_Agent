@@ -10,70 +10,80 @@ import (
 )
 
 type Config struct {
-	HTTPAddr            string
-	DatabaseURL         string
-	RedisAddr           string
-	RedisPassword       string
-	SchoolConfig        string
-	DevAuthEnabled      bool
-	AgentMode           string
-	LLMProvider         string
-	LLMBaseURL          string
-	LLMAPIKey           string
-	LLMModel            string
-	LLMTimeout          time.Duration
-	LLMInputPrice       float64
-	LLMOutputPrice      float64
-	WebSearchProvider   string
-	WebSearchBaseURL    string
-	WebSearchAPIKey     string
-	WebSearchTimeout    time.Duration
-	WebSearchTopN       int
-	WebSearchSearchTTL  time.Duration
-	WebSearchPageTTL    time.Duration
-	WebSearchExtractTTL time.Duration
-	KnowledgeProvider   string
-	WeKnoraBaseURL      string
-	WeKnoraAPIKey       string
-	WeKnoraTimeout      time.Duration
-	KnowledgeTopN       int
-	AccessTokenTTL      time.Duration
-	RefreshTokenTTL     time.Duration
-	ShutdownTimeout     time.Duration
-	AllowedOrigins      []string
+	HTTPAddr               string
+	DatabaseURL            string
+	RedisAddr              string
+	RedisPassword          string
+	SchoolConfig           string
+	DevAuthEnabled         bool
+	AgentMode              string
+	LLMProvider            string
+	LLMBaseURL             string
+	LLMAPIKey              string
+	LLMModel               string
+	LLMTimeout             time.Duration
+	LLMInputPrice          float64
+	LLMOutputPrice         float64
+	WebSearchProvider      string
+	WebSearchBaseURL       string
+	WebSearchAPIKey        string
+	WebSearchTimeout       time.Duration
+	WebSearchTopN          int
+	WebSearchSearchTTL     time.Duration
+	WebSearchPageTTL       time.Duration
+	WebSearchExtractTTL    time.Duration
+	KnowledgeProvider      string
+	WeKnoraBaseURL         string
+	WeKnoraAPIKey          string
+	WeKnoraTimeout         time.Duration
+	KnowledgeTopN          int
+	KnowledgeQueryCacheTTL time.Duration
+	AnswerCacheTTL         time.Duration
+	QuestionRateLimit      int
+	AccessTokenTTL         time.Duration
+	RefreshTokenTTL        time.Duration
+	ShutdownTimeout        time.Duration
+	AllowedOrigins         []string
+	AdminToken             string
+	ReportingTimeZone      string
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		HTTPAddr:            env("ASKU_HTTP_ADDR", ":18080"),
-		DatabaseURL:         env("ASKU_DATABASE_URL", "postgres://asku:asku_dev@localhost:55432/asku?sslmode=disable"),
-		RedisAddr:           env("ASKU_REDIS_ADDR", "localhost:6385"),
-		RedisPassword:       os.Getenv("ASKU_REDIS_PASSWORD"),
-		SchoolConfig:        env("ASKU_SCHOOL_CONFIG", "../config/schools/whut.yaml"),
-		DevAuthEnabled:      false,
-		AgentMode:           env("ASKU_AGENT_MODE", "policy"),
-		LLMProvider:         env("ASKU_LLM_PROVIDER", "mock"),
-		LLMBaseURL:          strings.TrimSpace(os.Getenv("ASKU_LLM_BASE_URL")),
-		LLMAPIKey:           strings.TrimSpace(os.Getenv("ASKU_LLM_API_KEY")),
-		LLMModel:            env("ASKU_LLM_MODEL", "asku-mock"),
-		LLMTimeout:          45 * time.Second,
-		WebSearchProvider:   env("ASKU_WEB_SEARCH_PROVIDER", "mock"),
-		WebSearchBaseURL:    strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_BASE_URL")),
-		WebSearchAPIKey:     strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_API_KEY")),
-		WebSearchTimeout:    12 * time.Second,
-		WebSearchTopN:       3,
-		WebSearchSearchTTL:  10 * time.Minute,
-		WebSearchPageTTL:    30 * time.Minute,
-		WebSearchExtractTTL: 30 * time.Minute,
-		KnowledgeProvider:   env("ASKU_KNOWLEDGE_PROVIDER", "disabled"),
-		WeKnoraBaseURL:      strings.TrimSpace(os.Getenv("ASKU_WEKNORA_BASE_URL")),
-		WeKnoraAPIKey:       strings.TrimSpace(os.Getenv("ASKU_WEKNORA_API_KEY")),
-		WeKnoraTimeout:      12 * time.Second,
-		KnowledgeTopN:       4,
-		AccessTokenTTL:      time.Hour,
-		RefreshTokenTTL:     30 * 24 * time.Hour,
-		ShutdownTimeout:     10 * time.Second,
-		AllowedOrigins:      splitCSV(env("ASKU_CORS_ORIGINS", "*")),
+		HTTPAddr:               env("ASKU_HTTP_ADDR", ":18080"),
+		DatabaseURL:            env("ASKU_DATABASE_URL", "postgres://asku:asku_dev@localhost:55432/asku?sslmode=disable"),
+		RedisAddr:              env("ASKU_REDIS_ADDR", "localhost:6385"),
+		RedisPassword:          os.Getenv("ASKU_REDIS_PASSWORD"),
+		SchoolConfig:           env("ASKU_SCHOOL_CONFIG", "../config/schools/whut.yaml"),
+		DevAuthEnabled:         false,
+		AgentMode:              env("ASKU_AGENT_MODE", "policy"),
+		LLMProvider:            env("ASKU_LLM_PROVIDER", "mock"),
+		LLMBaseURL:             strings.TrimSpace(os.Getenv("ASKU_LLM_BASE_URL")),
+		LLMAPIKey:              strings.TrimSpace(os.Getenv("ASKU_LLM_API_KEY")),
+		LLMModel:               env("ASKU_LLM_MODEL", "asku-mock"),
+		LLMTimeout:             45 * time.Second,
+		WebSearchProvider:      env("ASKU_WEB_SEARCH_PROVIDER", "mock"),
+		WebSearchBaseURL:       strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_BASE_URL")),
+		WebSearchAPIKey:        strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_API_KEY")),
+		WebSearchTimeout:       12 * time.Second,
+		WebSearchTopN:          3,
+		WebSearchSearchTTL:     10 * time.Minute,
+		WebSearchPageTTL:       30 * time.Minute,
+		WebSearchExtractTTL:    30 * time.Minute,
+		KnowledgeProvider:      env("ASKU_KNOWLEDGE_PROVIDER", "disabled"),
+		WeKnoraBaseURL:         strings.TrimSpace(os.Getenv("ASKU_WEKNORA_BASE_URL")),
+		WeKnoraAPIKey:          strings.TrimSpace(os.Getenv("ASKU_WEKNORA_API_KEY")),
+		WeKnoraTimeout:         12 * time.Second,
+		KnowledgeTopN:          4,
+		KnowledgeQueryCacheTTL: 10 * time.Minute,
+		AnswerCacheTTL:         30 * time.Minute,
+		QuestionRateLimit:      30,
+		AccessTokenTTL:         time.Hour,
+		RefreshTokenTTL:        30 * 24 * time.Hour,
+		ShutdownTimeout:        10 * time.Second,
+		AllowedOrigins:         splitCSV(env("ASKU_CORS_ORIGINS", "*")),
+		AdminToken:             strings.TrimSpace(os.Getenv("ASKU_ADMIN_TOKEN")),
+		ReportingTimeZone:      env("ASKU_REPORTING_TIMEZONE", "Asia/Shanghai"),
 	}
 	var err error
 	if cfg.DevAuthEnabled, err = envBool("ASKU_DEV_AUTH_ENABLED", cfg.DevAuthEnabled); err != nil {
@@ -101,6 +111,15 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if cfg.KnowledgeTopN, err = envPositiveInt("ASKU_KNOWLEDGE_TOP_N", cfg.KnowledgeTopN); err != nil {
+		return Config{}, err
+	}
+	if cfg.KnowledgeQueryCacheTTL, err = envDuration("ASKU_KNOWLEDGE_QUERY_CACHE_TTL", cfg.KnowledgeQueryCacheTTL); err != nil {
+		return Config{}, err
+	}
+	if cfg.AnswerCacheTTL, err = envDuration("ASKU_ANSWER_CACHE_TTL", cfg.AnswerCacheTTL); err != nil {
+		return Config{}, err
+	}
+	if cfg.QuestionRateLimit, err = envPositiveInt("ASKU_QUESTION_RATE_LIMIT_PER_MINUTE", cfg.QuestionRateLimit); err != nil {
 		return Config{}, err
 	}
 	if cfg.AccessTokenTTL, err = envDuration("ASKU_ACCESS_TOKEN_TTL", cfg.AccessTokenTTL); err != nil {
@@ -152,6 +171,12 @@ func Load() (Config, error) {
 	}
 	if cfg.KnowledgeTopN < 1 || cfg.KnowledgeTopN > 10 {
 		return Config{}, errors.New("ASKU_KNOWLEDGE_TOP_N must be between 1 and 10")
+	}
+	if cfg.QuestionRateLimit > 1000 {
+		return Config{}, errors.New("ASKU_QUESTION_RATE_LIMIT_PER_MINUTE must be between 1 and 1000")
+	}
+	if _, err := time.LoadLocation(cfg.ReportingTimeZone); err != nil {
+		return Config{}, fmt.Errorf("invalid ASKU_REPORTING_TIMEZONE %q: %w", cfg.ReportingTimeZone, err)
 	}
 	return cfg, nil
 }

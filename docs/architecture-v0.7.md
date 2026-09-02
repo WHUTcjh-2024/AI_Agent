@@ -1,8 +1,8 @@
-# AskU Architecture V0.6
+# AskU Architecture V0.7
 
 ## Goal
 
-V0.6 adds the Phase 7 policy orchestrator and a first-class knowledge boundary. The HTTP contract and product state remain stable while routing, search, model, knowledge base, authentication and storage adapters evolve independently.
+V0.7 adds Phase 8 cost control behind consumer-owned cache ports. Redis remains an infrastructure adapter; routing, cacheability, school versioning and provider behavior remain independently replaceable.
 
 ## System boundary
 
@@ -15,13 +15,13 @@ Go API
                               ├→ Policy Router
                               ├→ Knowledge Searcher → WeKnora Provider
                               ├→ Web Searcher → Search Provider
-                              ├→ Answer Cache port (Phase 8 implementation)
+                              ├→ Versioned Answer Cache → Redis JSON Cache
                               └→ Generator → LLM Provider
 
 Infrastructure adapters
   PostgreSQL implements consumer repository ports
-  Redis implements cache ports
-  School registry supplies school-specific policy and allowed domains
+  Redis implements JSON cache, rate-limit and idempotency ports
+  School registry supplies school-specific policy, versions and allowed domains
 ```
 
 Only composition roots know concrete implementations:
@@ -58,6 +58,9 @@ Consumer modules define the ports they need. Infrastructure implements those por
 - External provider errors are translated into stable public codes and safe user messages.
 - Unknown/trailing JSON is rejected before rate-limit and idempotency resources are consumed.
 - Real model deltas are consumed through the streaming provider path and coalesced into short SSE chunks.
+- Knowledge Query Cache keys include school, knowledge version, provider, knowledge-base id and Top-N.
+- Only grounded official Knowledge answers enter Answer Cache; current web results and no-source answers never do.
+- A school `knowledge_version` bump invalidates previous answers without scanning or deleting keys.
 
 ## Extension recipes
 
@@ -101,6 +104,7 @@ npm run export:ios
 ## Deliberate limits
 
 - No Kubernetes, message broker, distributed workflow engine or microservice split.
+- No semantic answer matching, distributed workflow lock or Redis Streams; exact normalized questions and bounded TTLs are sufficient for the pilot.
 - The WeKnora REST adapter is implemented, but no deployment, API key or school knowledge-base id is committed.
 - AsyncStorage is acceptable for internal demo tokens; production should use a secure TokenStore adapter.
 - Provider selection remains startup configuration, which is appropriate for the current single-school validation stage.

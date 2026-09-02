@@ -1,6 +1,8 @@
-# AskU Backend V0.6
+# AskU Backend V0.9
 
-当前后端采用 Handler → Run Coordinator → Agent Orchestrator → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis、AgentRun、可重连 SSE、Policy Router、WeKnora Knowledge Adapter、模型/搜索 Provider 和用量记录。
+当前后端采用 Handler → Run Coordinator → Agent Orchestrator → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis 成本控制、AgentRun、可重连 SSE、Policy Router、WeKnora Knowledge Adapter、模型/搜索 Provider 和用量记录。
+
+V0.9 在 Citation Trust Chain 基础上增加独立鉴权的 Admin & Observability 数据面。WeKnora ID 经 `knowledge.*` Catalog 映射为 Crawler 保存的官方元数据，Backend 根据真实 Evidence 生成引用编号；最终 Citation 与消息原子持久化，`message.completed` 是 APP 的引用事实源。
 
 ## 当前边界
 
@@ -10,6 +12,8 @@
 - `/v1/auth/wechat` 保留正式接口，但没有 AppID/签名时返回 `wechat_not_configured`。
 - `SchoolContext` 从 `config/schools/whut.yaml` 加载，业务 Handler 不写死学校域名和知识库 ID。
 - `ASKU_WEB_SEARCH_PROVIDER=mock` 默认不访问公网；切换 `searxng` 只改变 Provider Adapter。官方域名过滤、抓取、提取与三级缓存仍由 Gateway 统一执行。
+- Redis 只实现 JSON Cache、Rate Limit 和 Idempotency 等基础端口；答案是否可缓存、如何按学校知识版本失效，由 Agent 与 SchoolContext 决定。
+- `knowledge` Catalog 未找到映射或没有允许域内公开 URL 时，Evidence 不得进入正式答案；任何 `local_file_path` 都不会被 API 查询或返回。
 
 ## 启动
 
@@ -85,6 +89,32 @@ ASKU_KNOWLEDGE_TOP_N=4
 
 每所学校的知识库 ID 只写在 `config/schools/<school>.yaml` 的 `official_knowledge_base_id`，不得写入 Router、Handler 或 Provider。详细说明见 `docs/phase-7-agent-orchestrator.md`。
 
+## Redis Cost Control
+
+```text
+ASKU_KNOWLEDGE_QUERY_CACHE_TTL=10m
+ASKU_ANSWER_CACHE_TTL=30m
+ASKU_QUESTION_RATE_LIMIT_PER_MINUTE=30
+```
+
+- Knowledge Query Cache 按学校、知识版本、Provider、知识库 ID、规范化问题和 Top-N 隔离。
+- Answer Cache Key 包含学校和 `knowledge_version`；更新校园资料后提升该校版本即可使旧答案自然失效。
+- 只有具有官方来源的 Knowledge 答案进入 Answer Cache；实时搜索、受控回答和无可靠来源回答不缓存。
+- Redis 故障时 Query/Answer Cache 均 fail-open，不阻断正常检索和生成。
+
+详细规则见 `docs/phase-8-redis-cost-control.md`。
+
+## Phase 10A Admin & Observability
+
+`GET /v1/admin/overview` 以只读事务聚合用户活跃、留存、问题量、Run 质量、TTFT/总耗时、Token/成本、缓存命中、路由、错误码和每日趋势。接口使用独立 Admin Token，普通用户 Access Token 无权限：
+
+```powershell
+$headers = @{ Authorization = 'Bearer asku-local-admin-do-not-use-in-production' }
+Invoke-RestMethod -Headers $headers 'http://localhost:18080/v1/admin/overview'
+```
+
+未设置 `ASKU_ADMIN_TOKEN` 时接口隐藏为 404。生产环境必须设置高熵 Token；统计时区由 `ASKU_REPORTING_TIMEZONE` 控制，默认 `Asia/Shanghai`。契约与口径见 `../docs/phase-10a-admin-observability.md`。
+
 ## 测试命令
 
 ```powershell
@@ -93,4 +123,4 @@ go vet ./...
 go test -race ./...
 ```
 
-架构边界和扩展方式见 `../docs/architecture-v0.6.md`。
+架构边界和扩展方式见 `../docs/architecture-v0.9.md`。

@@ -14,6 +14,7 @@ export type Message = {
   content: string;
   createdAt: string;
   sourceIds?: string[];
+  citations?: Citation[];
   status?: 'streaming' | 'completed' | 'failed' | 'stopped';
 };
 
@@ -29,18 +30,52 @@ export type Source = {
   id: string;
   title: string;
   publisher: string;
+  department: string;
   publishedAt: string;
   audience: string;
   summary: string;
   url: string;
   official: boolean;
+  officialUrl?: string;
+  attachmentUrl?: string;
+  parentPageUrl?: string;
+  sourceType?: string;
+  documentType?: string;
+  authority?: string;
+  freshness?: string;
+  knowledgeBundleId?: string;
+  attachments: SourceAttachment[];
+  evidence: string[];
+};
+
+export type SourceAttachment = {
+  id?: string;
+  name: string;
+  url: string;
+  documentType?: string;
+  parentPageUrl?: string;
 };
 
 export type Citation = {
-  id: string;
-  messageId: string;
+  citationId: string;
+  index: number;
   sourceId: string;
-  excerpt: string;
+  askuDocumentId?: string;
+  weknoraKnowledgeId?: string;
+  chunkId?: string;
+  title: string;
+  sourceName: string;
+  department: string;
+  publishDate: string;
+  sourceType?: string;
+  documentType?: string;
+  officialUrl?: string;
+  attachmentUrl?: string;
+  parentPageUrl?: string;
+  evidenceText: string;
+  authority: string;
+  freshness?: string;
+  knowledgeBundleId?: string;
 };
 
 export type Feedback = {

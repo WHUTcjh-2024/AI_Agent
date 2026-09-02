@@ -23,7 +23,7 @@ import (
 	"asku/backend/internal/websearch"
 )
 
-const version = "0.6.0"
+const version = "0.9.0"
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
@@ -126,7 +126,9 @@ func main() {
 			logger.Error("configure knowledge provider", "provider", cfg.KnowledgeProvider, "error", providerErr)
 			os.Exit(1)
 		}
-		knowledgeSearcher, err = knowledge.NewGateway(provider, schools)
+		knowledgeSearcher, err = knowledge.NewGateway(
+			provider, schools, redisCache, knowledge.CachePolicy{QueryTTL: cfg.KnowledgeQueryCacheTTL}, database,
+		)
 		if err != nil {
 			logger.Error("configure knowledge gateway", "error", err)
 			os.Exit(1)
@@ -139,8 +141,13 @@ func main() {
 	case "policy":
 		agentRouter = agent.NewPolicyRouter()
 	}
+	answerCache, err := agent.NewVersionedAnswerCache(redisCache, schools, cfg.AnswerCacheTTL)
+	if err != nil {
+		logger.Error("configure answer cache", "error", err)
+		os.Exit(1)
+	}
 	agentExecutor, err := agent.NewOrchestrator(agentRouter, agent.Capabilities{
-		Generator: llmGateway, Knowledge: knowledgeSearcher, WebSearch: searchGateway,
+		Generator: llmGateway, Knowledge: knowledgeSearcher, WebSearch: searchGateway, AnswerCache: answerCache,
 		SearchTopN: cfg.WebSearchTopN, KnowledgeTopN: cfg.KnowledgeTopN,
 	})
 	if err != nil {
@@ -151,6 +158,8 @@ func main() {
 	apiServer := api.New(database, redisCache, authService, runService, hub, schools, cfg.DevAuthEnabled, cfg.AllowedOrigins, api.RuntimeInfo{
 		Version: version, AgentMode: cfg.AgentMode, LLMProvider: cfg.LLMProvider,
 		WebSearchProvider: cfg.WebSearchProvider, KnowledgeProvider: cfg.KnowledgeProvider,
+	}, api.RuntimePolicy{QuestionRateLimitPerMinute: int64(cfg.QuestionRateLimit)}, api.AdminOptions{
+		Reporter: database, Token: cfg.AdminToken, TimeZone: cfg.ReportingTimeZone,
 	})
 	httpServer := &http.Server{
 		Addr: cfg.HTTPAddr, Handler: apiServer.Handler(), ReadHeaderTimeout: 5 * time.Second,

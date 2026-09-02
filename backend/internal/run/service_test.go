@@ -15,7 +15,7 @@ type finalizationRepository struct {
 func (r *finalizationRepository) CreateUserMessageAndRun(context.Context, string, domain.Message) (domain.Message, domain.AgentRun, error) {
 	return domain.Message{}, domain.AgentRun{}, nil
 }
-func (r *finalizationRepository) CompleteAssistantMessage(context.Context, string, domain.Message, []domain.Source) (domain.Message, error) {
+func (r *finalizationRepository) CompleteAssistantMessage(context.Context, string, domain.Message, []domain.Source, []domain.Citation) (domain.Message, error) {
 	return domain.Message{}, nil
 }
 func (r *finalizationRepository) RunOwner(context.Context, string) (string, string, string, error) {

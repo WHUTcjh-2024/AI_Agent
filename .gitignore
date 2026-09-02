@@ -28,10 +28,21 @@ apps/mobile/ios/
 bin/
 coverage.out
 
+# Python knowledge-pipeline environments and generated artifacts.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+asku-knowledge/data/
+asku-knowledge/exports/
+asku-knowledge/reports/
+
 # Local QA captures and temporary files.
 tmp/
 apps/mobile/artifacts/
 apps/mobile/.git-backup-local/
+_knowledge_schema_*.sql
 
 # Editor, OS, and log files.
 .idea/
