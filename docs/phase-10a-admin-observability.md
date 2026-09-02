@@ -21,7 +21,7 @@ users/messages/feedback/usage_records
 - 质量：完成/失败/取消、成功率、检索型回答无 Citation、负向反馈、错误码分布。
 - 性能：总耗时平均/P50/P95、TTFT 平均/P95。
 - 成本：Input/Output Token、估算人民币微元、单问题成本、Answer Cache 命中率。
-- 路由与逐日趋势：controlled / knowledge / web_search / cache 及每日核心指标。
+- 路由与逐日趋势：controlled / knowledge / web_search / hybrid / cache 及每日核心指标。
 
 路由、缓存命中和延迟直接从 `run_events` 聚合，不再引入第二套可漂移的埋点状态。查询使用 PostgreSQL `REPEATABLE READ + READ ONLY` 事务，保证一个响应内口径一致。
 

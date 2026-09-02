@@ -25,20 +25,23 @@ func (PolicyRouter) Plan(ctx context.Context, request Request) (Plan, error) {
 	}
 	if isIntroductionQuestion(question) {
 		answer := "我是 AskU，负责帮助你查找本校的官方信息。\n\n你可以询问选课、转专业、考试报名、奖学金、图书馆、校历和学生事务等问题。没有可靠来源时，我会明确说明暂未找到，而不会猜测学校政策。"
-		return Plan{Answer: answer, Route: "controlled", Reason: "product_introduction"}, nil
+		return Plan{Answer: answer, Route: RouteControlled, Reason: "product_introduction"}, nil
 	}
 	if isWebSearchProbe(question) {
 		return Plan{
-			Search: &websearch.Request{Query: question}, Route: "web_search", Reason: "integration_probe_requires_official_search",
+			Search: &websearch.Request{Query: question}, Route: RouteWebSearch, Reason: "integration_probe_requires_official_search",
 		}, nil
 	}
 	if needsFreshWebSearch(question) {
 		return Plan{
-			Search: &websearch.Request{Query: question}, Route: "web_search", Reason: "freshness_requires_official_search",
+			Knowledge: &knowledge.Request{Query: question},
+			Search:    &websearch.Request{Query: question},
+			Route:     RouteHybrid,
+			Reason:    "freshness_requires_knowledge_and_official_search",
 		}, nil
 	}
 	return Plan{
-		Knowledge: &knowledge.Request{Query: question}, Route: "knowledge", Reason: "stable_campus_knowledge_first",
+		Knowledge: &knowledge.Request{Query: question}, Route: RouteKnowledge, Reason: "stable_campus_knowledge_first",
 	}, nil
 }
 

@@ -11,6 +11,14 @@ import (
 	"asku/backend/internal/websearch"
 )
 
+const (
+	RouteControlled = "controlled"
+	RouteLLM        = "llm"
+	RouteKnowledge  = "knowledge"
+	RouteWebSearch  = "web_search"
+	RouteHybrid     = "hybrid"
+)
+
 type Plan struct {
 	Answer            string
 	Sources           []domain.Source
@@ -46,15 +54,15 @@ func (m *MockRouter) Plan(ctx context.Context, request Request) (Plan, error) {
 	question := request.Question
 	normalized := strings.ToLower(strings.TrimSpace(question))
 	if strings.Contains(normalized, "offline") || strings.Contains(question, "网络错误") {
-		return Plan{Fail: true, Route: "controlled", Reason: "mock_failure_test"}, nil
+		return Plan{Fail: true, Route: RouteControlled, Reason: "mock_failure_test"}, nil
 	}
 	if strings.Contains(normalized, "no-source") || strings.Contains(question, "养宠物") || strings.Contains(question, "可靠来源") {
 		answer := "暂时没有找到可靠的学校官方信息。\n\n你可以换一种方式提问，或查看学校相关部门发布的原始资料。"
-		return Plan{Answer: answer, Chunks: ChunkAnswer(answer), Route: "controlled", Reason: "no_reliable_source"}, nil
+		return Plan{Answer: answer, Chunks: ChunkAnswer(answer), Route: RouteControlled, Reason: "no_reliable_source"}, nil
 	}
 	if strings.Contains(normalized, "web-search") || strings.Contains(question, "官网搜索") || needsFreshWebSearch(question) {
 		return Plan{
-			Search: &websearch.Request{Query: question}, Route: "web_search", Reason: "freshness_requires_official_search",
+			Search: &websearch.Request{Query: question}, Route: RouteWebSearch, Reason: "freshness_requires_official_search",
 		}, nil
 	}
 	if strings.Contains(question, "转专业") {
@@ -69,13 +77,13 @@ func (m *MockRouter) Plan(ctx context.Context, request Request) (Plan, error) {
 				Attachments: []domain.Attachment{}, Evidence: []string{},
 			},
 		}
-		return Plan{Answer: answer, Sources: sources, Chunks: ChunkAnswer(answer), Route: "controlled", Reason: "verified_fixture"}, nil
+		return Plan{Answer: answer, Sources: sources, Chunks: ChunkAnswer(answer), Route: RouteControlled, Reason: "verified_fixture"}, nil
 	}
 	generation := llm.Request{Messages: []llm.Message{
 		{Role: llm.RoleSystem, Content: "你是 AskU 联调助手。校园知识库尚未接入；不得编造学校政策、日期或流程，只说明当前可核验的信息边界。"},
 		{Role: llm.RoleUser, Content: question},
 	}}
-	return Plan{Generation: &generation, Route: "llm", Reason: "no_retrieval_required_for_integration"}, nil
+	return Plan{Generation: &generation, Route: RouteLLM, Reason: "no_retrieval_required_for_integration"}, nil
 }
 
 func needsFreshWebSearch(question string) bool {

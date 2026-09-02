@@ -1,12 +1,13 @@
-# AskU Backend V0.9
+# AskU Backend V0.10
 
 当前后端采用 Handler → Run Coordinator → Agent Orchestrator → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis 成本控制、AgentRun、可重连 SSE、Policy Router、WeKnora Knowledge Adapter、模型/搜索 Provider 和用量记录。
 
-V0.9 在 Citation Trust Chain 基础上增加独立鉴权的 Admin & Observability 数据面。WeKnora ID 经 `knowledge.*` Catalog 映射为 Crawler 保存的官方元数据，Backend 根据真实 Evidence 生成引用编号；最终 Citation 与消息原子持久化，`message.completed` 是 APP 的引用事实源。
+V0.10 增加 Phase 12 混合 Agent 编排。WeKnora ID 经 `knowledge.*` Catalog 映射为 Crawler 保存的官方元数据，Backend 根据真实 Evidence 生成引用编号；最终 Citation 与消息原子持久化，`message.completed` 是 APP 的引用事实源。
 
 ## 当前边界
 
-- `ASKU_AGENT_MODE=policy` 是默认正式路由；`mock` 仅保留开发场景。稳定校园问题优先知识库，时效问题进入官方网页搜索。
+- `ASKU_AGENT_MODE=policy` 是默认正式路由；`mock` 仅保留开发场景。稳定校园问题只走知识库，时效问题并行执行知识库与官方网页检索。
+- 混合路由以官方网页作为时效事实依据；知识检索失败可退化为网页结果，网页失败或零结果时不会拿知识库旧资料冒充最新信息。
 - `ASKU_KNOWLEDGE_PROVIDER=disabled` 是安全默认值：没有知识库时明确返回无可靠来源，不提供假检索结果。
 - `openai-compatible` Provider 可通过环境变量接入兼容 `/chat/completions` 的 API；Base URL、Key、Model 均不写入代码或日志。
 - `/v1/auth/wechat` 保留正式接口，但没有 AppID/签名时返回 `wechat_not_configured`。
@@ -99,7 +100,7 @@ ASKU_QUESTION_RATE_LIMIT_PER_MINUTE=30
 
 - Knowledge Query Cache 按学校、知识版本、Provider、知识库 ID、规范化问题和 Top-N 隔离。
 - Answer Cache Key 包含学校和 `knowledge_version`；更新校园资料后提升该校版本即可使旧答案自然失效。
-- 只有具有官方来源的 Knowledge 答案进入 Answer Cache；实时搜索、受控回答和无可靠来源回答不缓存。
+- 只有具有官方来源的稳定 Knowledge 答案进入 Answer Cache；混合检索、实时搜索、受控回答和无可靠来源回答不读写 Answer Cache。
 - Redis 故障时 Query/Answer Cache 均 fail-open，不阻断正常检索和生成。
 
 详细规则见 `docs/phase-8-redis-cost-control.md`。
@@ -123,4 +124,4 @@ go vet ./...
 go test -race ./...
 ```
 
-架构边界和扩展方式见 `../docs/architecture-v0.9.md`。
+架构边界和扩展方式见 `../docs/architecture-v0.10.md`，混合 Agent 规则见 `../docs/phase-12-hybrid-agent.md`。

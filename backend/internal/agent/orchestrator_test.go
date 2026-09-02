@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -147,6 +148,192 @@ func (knowledgeStub) Search(context.Context, knowledge.Request) (knowledge.Respo
 	}, nil
 }
 
+type capturingGenerator struct {
+	request llm.Request
+}
+
+func (g *capturingGenerator) ProviderName() string { return "capturing-llm" }
+func (g *capturingGenerator) Generate(context.Context, llm.CallContext, llm.Request) (llm.Response, error) {
+	panic("orchestrator must use the streaming generator path")
+}
+func (g *capturingGenerator) Stream(_ context.Context, _ llm.CallContext, request llm.Request) (<-chan llm.StreamEvent, error) {
+	g.request = request
+	events := make(chan llm.StreamEvent, 1)
+	events <- llm.StreamEvent{Delta: "混合回答", Response: &llm.Response{Content: "混合回答"}}
+	close(events)
+	return events, nil
+}
+
+func TestHybridAgentCombinesKnowledgeAndFreshOfficialEvidence(t *testing.T) {
+	generator := &capturingGenerator{}
+	capabilities := testCapabilities(generator)
+	capabilities.Knowledge = knowledgeStub{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	progress := &progressRecorder{}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{
+		UserID: "user", SchoolID: "whut", RunID: "run", Question: "今年奖学金什么时候评？",
+	}, progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Sources) != 2 || len(result.Citations) != 2 {
+		t.Fatalf("hybrid result must retain both evidence families: %#v", result)
+	}
+	if progress.metadata["retrievalMode"] != RouteHybrid || progress.metadata["knowledgeStats"] == nil || progress.metadata["searchStats"] == nil {
+		t.Fatalf("hybrid retrieval metadata is incomplete: %#v", progress.metadata)
+	}
+	if len(generator.request.Messages) != 2 || !strings.Contains(generator.request.Messages[0].Content, "时效事实依据") ||
+		!strings.Contains(generator.request.Messages[1].Content, "稳定背景依据") || !strings.Contains(generator.request.Messages[1].Content, "学校官网实时检索结果") {
+		t.Fatalf("hybrid grounding prompt lost evidence roles: %#v", generator.request)
+	}
+}
+
+type failingKnowledgeStub struct{}
+
+func (failingKnowledgeStub) Search(context.Context, knowledge.Request) (knowledge.Response, error) {
+	return knowledge.Response{}, errors.New("knowledge unavailable")
+}
+
+func TestHybridAgentFallsBackToOfficialWebWhenKnowledgeFails(t *testing.T) {
+	capabilities := testCapabilities(generatorStub{})
+	capabilities.Knowledge = failingKnowledgeStub{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	progress := &progressRecorder{}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Sources) != 1 || result.Sources[0].ID != "src_1" {
+		t.Fatalf("official web fallback was not retained: %#v", result.Sources)
+	}
+	if !reflect.DeepEqual(progress.metadata["degradedCapabilities"], []string{RouteKnowledge}) {
+		t.Fatalf("knowledge degradation must be observable: %#v", progress.metadata)
+	}
+}
+
+func TestHybridAgentReportsDisabledKnowledgeAsDegraded(t *testing.T) {
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), testCapabilities(generatorStub{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	progress := &progressRecorder{}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Sources) != 1 || !reflect.DeepEqual(progress.metadata["degradedCapabilities"], []string{RouteKnowledge}) {
+		t.Fatalf("disabled knowledge must fail open observably: result=%#v metadata=%#v", result, progress.metadata)
+	}
+}
+
+type failingSearchStub struct{}
+
+func (failingSearchStub) Gather(context.Context, websearch.Request) (websearch.Response, error) {
+	return websearch.Response{}, errors.New("web search unavailable")
+}
+
+func TestHybridAgentDoesNotUseKnowledgeAsFreshEvidenceWhenWebFails(t *testing.T) {
+	capabilities := testCapabilities(generatorStub{})
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.WebSearch = failingSearchStub{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, &progressRecorder{})
+	executionError, ok := err.(*ExecutionError)
+	if !ok || executionError.Code != "web_search_provider_error" {
+		t.Fatalf("freshness-critical web failure must fail the run: %#v", err)
+	}
+}
+
+type emptySearchStub struct{}
+
+func (emptySearchStub) Gather(context.Context, websearch.Request) (websearch.Response, error) {
+	return websearch.Response{Evidence: []websearch.Evidence{}}, nil
+}
+
+type untrustedSearchStub struct{}
+
+func (untrustedSearchStub) Gather(context.Context, websearch.Request) (websearch.Response, error) {
+	return websearch.Response{Evidence: []websearch.Evidence{{
+		ID: "private", Title: "非公开结果", URL: "http://127.0.0.1/admin", Publisher: "unknown",
+		Excerpt: "不得作为校园时效证据。", Official: false,
+	}}}, nil
+}
+
+func TestHybridAgentReturnsControlledBoundaryWithoutFreshEvidence(t *testing.T) {
+	capabilities := testCapabilities(nil)
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.WebSearch = emptySearchStub{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, &progressRecorder{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Answer != noReliableSourceAnswer() || len(result.Sources) != 0 || len(result.Citations) != 0 {
+		t.Fatalf("stale knowledge must not masquerade as fresh evidence: %#v", result)
+	}
+}
+
+func TestHybridAgentRejectsUncitableFreshEvidence(t *testing.T) {
+	capabilities := testCapabilities(nil)
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.WebSearch = untrustedSearchStub{}
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, &progressRecorder{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Answer != noReliableSourceAnswer() || len(result.Sources) != 0 || len(result.Citations) != 0 {
+		t.Fatalf("uncitable web evidence must not ground a fresh answer: %#v", result)
+	}
+}
+
+type countingAnswerCache struct {
+	lookups int
+	stores  int
+}
+
+func (c *countingAnswerCache) Lookup(context.Context, string, string) (CachedAnswer, bool, error) {
+	c.lookups++
+	return CachedAnswer{}, false, nil
+}
+func (c *countingAnswerCache) Store(context.Context, string, string, CachedAnswer) error {
+	c.stores++
+	return nil
+}
+
+func TestHybridAgentBypassesStableAnswerCache(t *testing.T) {
+	answerCache := &countingAnswerCache{}
+	capabilities := testCapabilities(generatorStub{})
+	capabilities.Knowledge = knowledgeStub{}
+	capabilities.AnswerCache = answerCache
+	orchestrator, err := NewOrchestrator(NewPolicyRouter(), capabilities)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "今年校历怎么安排？"}, &progressRecorder{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if answerCache.lookups != 0 || answerCache.stores != 0 {
+		t.Fatalf("hybrid answers must bypass stable cache: lookups=%d stores=%d", answerCache.lookups, answerCache.stores)
+	}
+}
+
 func TestPolicyOrchestratorUsesKnowledgeBeforeGeneration(t *testing.T) {
 	capabilities := testCapabilities(generatorStub{})
 	capabilities.Knowledge = knowledgeStub{}
@@ -196,7 +383,7 @@ func TestAnswerCacheHitBypassesExternalCapabilities(t *testing.T) {
 		t.Fatal(err)
 	}
 	progress := &progressRecorder{}
-	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "校历在哪里？"}, progress)
+	result, err := orchestrator.Execute(context.Background(), ExecutionRequest{SchoolID: "whut", Question: "奖学金怎么评？"}, progress)
 	if err != nil {
 		t.Fatal(err)
 	}

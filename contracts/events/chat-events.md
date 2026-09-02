@@ -18,6 +18,7 @@
 
 - Answer Cache 命中时 `route.resolved.route=cache`，检索引擎为 `answer-cache`，并携带 `cacheHit=true`。
 - Knowledge Query Cache 命中状态位于 `retrieval.completed.knowledgeStats.queryCacheHit`。
+- Phase 12 时效问题使用 `route.resolved.route=hybrid`、`retrieval.started.engine=hybrid`；完成事件同时携带 `knowledgeStats` 与 `searchStats`。知识能力降级时附带 `degradedCapabilities=["knowledge"]`。
 - `controlled` 路径不产生检索事件，直接进入 `generation.started`。
 
 ## Citation 约束

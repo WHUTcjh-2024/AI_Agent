@@ -85,3 +85,7 @@ run.completed
 ## Phase 8 接入结果
 
 `agent.VersionedAnswerCache` 已在组合根注入。缓存 Key 包含 `school_id`、知识版本和规范化问题；只缓存带官方来源的 Knowledge 答案。Run、API、SSE 和移动端无需修改。
+
+## Phase 12 升级说明
+
+本文件保留 Phase 7 的单能力路由基线。当前时效问题已升级为 Knowledge + Web 混合编排，纯 Web 的 `官网搜索测试` 仍用于单能力联调；最新规则见 `phase-12-hybrid-agent.md`。
