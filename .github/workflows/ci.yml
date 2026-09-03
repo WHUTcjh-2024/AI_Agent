@@ -8,6 +8,47 @@ permissions:
   contents: read
 
 jobs:
+  evaluation:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: asku_eval
+          POSTGRES_USER: asku_eval
+          POSTGRES_PASSWORD: asku_eval_local
+        ports:
+          - 15433:5432
+        options: >-
+          --health-cmd "pg_isready -U asku_eval -d asku_eval"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 16380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Engineering evaluation (fixtures, no paid providers)
+        working-directory: backend
+        env:
+          ASKU_EVAL_POSTGRES_URL: postgres://asku_eval:asku_eval_local@127.0.0.1:15433/asku_eval?sslmode=disable
+          ASKU_EVAL_REDIS_ADDR: 127.0.0.1:16380
+        run: go run ./cmd/eval --suite all --race --out ../evals/reports/ci
+      - name: Upload evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engineering-evaluation
+          path: evals/reports/ci/
+          if-no-files-found: error
+
   knowledge:
     runs-on: ubuntu-latest
     defaults:

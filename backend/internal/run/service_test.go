@@ -4,8 +4,24 @@ import (
 	"context"
 	"testing"
 
+	"asku/backend/internal/agent"
 	"asku/backend/internal/domain"
 )
+
+type cancelledExecutor struct{}
+
+func (cancelledExecutor) Execute(context.Context, agent.ExecutionRequest, agent.Progress) (agent.ExecutionResult, error) {
+	return agent.ExecutionResult{}, &agent.ExecutionError{Code: "web_search_provider_error", Retryable: true, Cause: context.Canceled}
+}
+
+func TestWrappedProviderCancellationRemainsCancelled(t *testing.T) {
+	repository := &finalizationRepository{}
+	service := NewService(repository, cancelledExecutor{}, NewHub(), false)
+	service.execute(context.Background(), "owner", "school", domain.AgentRun{ID: "run_1"}, "question")
+	if repository.status != "CANCELLED" {
+		t.Fatalf("provider-wrapped cancellation became %s", repository.status)
+	}
+}
 
 type finalizationRepository struct {
 	finalized bool

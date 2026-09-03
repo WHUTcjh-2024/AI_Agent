@@ -27,6 +27,7 @@ apps/mobile/ios/
 # Go build and coverage output.
 bin/
 coverage.out
+evals/reports/
 
 # Python knowledge-pipeline environments and generated artifacts.
 __pycache__/

@@ -72,6 +72,12 @@ func (s *Service) execute(ctx context.Context, userID, schoolID string, run doma
 	progress := &executionProgress{service: s, runID: run.ID, schoolID: schoolID, messageID: messageID}
 	result, err := s.executor.Execute(ctx, agent.ExecutionRequest{UserID: userID, SchoolID: schoolID, RunID: run.ID, Question: question}, progress)
 	if err != nil {
+		// Adapters can wrap context cancellation in ExecutionError. Cancellation
+		// remains a user-requested terminal state, not a retryable provider fault.
+		if errors.Is(err, context.Canceled) || errors.Is(ctx.Err(), context.Canceled) {
+			s.cancelled(run.ID)
+			return
+		}
 		var executionErr *agent.ExecutionError
 		if errors.As(err, &executionErr) {
 			slog.Error("agent execution failed", "run_id", run.ID, "code", executionErr.Code, "error", executionErr.Cause)

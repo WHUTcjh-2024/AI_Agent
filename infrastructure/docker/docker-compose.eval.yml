@@ -1,0 +1,62 @@
+name: asku-eval
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: asku_eval
+      POSTGRES_USER: asku_eval
+      POSTGRES_PASSWORD: asku_eval_local
+    ports:
+      - "127.0.0.1:15433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asku_eval -d asku_eval"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:16380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Optional: validate the production composition root with scripts/smoke.ps1.
+  backend:
+    profiles: [smoke]
+    build:
+      context: ../../backend
+    environment:
+      ASKU_HTTP_ADDR: ":18080"
+      ASKU_DATABASE_URL: postgres://asku_eval:asku_eval_local@postgres:5432/asku_eval?sslmode=disable
+      ASKU_REDIS_ADDR: redis:6379
+      ASKU_SCHOOL_CONFIG: /config/schools/whut.yaml
+      ASKU_DEV_AUTH_ENABLED: "true"
+      ASKU_AGENT_MODE: policy
+      ASKU_LLM_PROVIDER: mock
+      ASKU_LLM_MODEL: asku-mock
+      ASKU_WEB_SEARCH_PROVIDER: mock
+      ASKU_KNOWLEDGE_PROVIDER: disabled
+      ASKU_ADMIN_TOKEN: asku-local-admin-do-not-use-in-production
+      ASKU_REPORTING_TIMEZONE: Asia/Shanghai
+    volumes:
+      - ../../config/schools:/config/schools:ro
+    ports:
+      - "127.0.0.1:18081:18080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:18080/healthz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

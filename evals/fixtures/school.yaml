@@ -1,0 +1,10 @@
+# Synthetic scope, used only by the isolated engineering tests.
+school_id: eval
+school_name: AskU Engineering Fixture
+allowed_domains:
+  - university.example
+official_knowledge_base_id: fixture-kb
+community_knowledge_base_id: ""
+knowledge_version: fixture-v1
+source_tags:
+  official: synthetic

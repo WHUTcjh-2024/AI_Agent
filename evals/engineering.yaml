@@ -1,0 +1,172 @@
+version: 1
+cases:
+  - id: stable-route
+    suite: offline
+    package: ./internal/agent
+    test: TestPolicyRouterUsesKnowledgeForStableCampusQuestion
+    description: 稳定问题仅走 Knowledge
+  - id: fresh-route
+    suite: offline
+    package: ./internal/agent
+    test: TestPolicyRouterUsesHybridRetrievalForFreshQuestion
+    description: 时效问题走混合检索
+  - id: stable-grounding
+    suite: offline
+    package: ./internal/agent
+    test: TestPolicyOrchestratorUsesKnowledgeBeforeGeneration
+    description: 稳定知识引用来自真实传入 Evidence
+  - id: hybrid-grounding
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentCombinesKnowledgeAndFreshOfficialEvidence
+    description: 混合检索保留两类来源及证据角色
+  - id: knowledge-failure
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentFallsBackToOfficialWebWhenKnowledgeFails
+    description: 知识失败可观察地降级到官方网页
+  - id: knowledge-disabled
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentReportsDisabledKnowledgeAsDegraded
+    description: 知识关闭降级标记
+  - id: web-failure
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentDoesNotUseKnowledgeAsFreshEvidenceWhenWebFails
+    description: Web 失败不以旧知识代替
+  - id: web-empty
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentReturnsControlledBoundaryWithoutFreshEvidence
+    description: Web 零结果清空引用并明确无法确认
+  - id: web-uncitable
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentRejectsUncitableFreshEvidence
+    description: 不可引用的网页不进入答案
+  - id: fresh-cache-bypass
+    suite: offline
+    package: ./internal/agent
+    test: TestHybridAgentBypassesStableAnswerCache
+    description: 时效问答绕过稳定答案缓存
+  - id: answer-cache-hit
+    suite: offline
+    package: ./internal/agent
+    test: TestAnswerCacheHitBypassesExternalCapabilities
+    description: 缓存命中不调用外部能力
+  - id: answer-cache-write
+    suite: offline
+    package: ./internal/agent
+    test: TestKnowledgeAnswerIsStoredAfterGroundedGeneration
+    description: 有依据的稳定答案写入缓存
+  - id: answer-cache-failure
+    suite: offline
+    package: ./internal/agent
+    test: TestAnswerCacheFailureDoesNotFailGroundedAnswer
+    description: 缓存故障不阻断有依据回答
+  - id: answer-cache-version
+    suite: offline
+    package: ./internal/agent
+    test: TestAnswerCacheVersionBumpInvalidatesOldEntry
+    description: 知识版本变更使旧答案缓存失效
+  - id: query-cache-version
+    suite: offline
+    package: ./internal/knowledge
+    test: TestKnowledgeQueryCacheKeySeparatesKnowledgeVersions
+    description: 知识检索缓存按知识版本隔离
+  - id: source-allowlist
+    suite: offline
+    package: ./internal/knowledge
+    test: TestGatewayDropsKnowledgeSourceURLOutsideSchoolAllowlist
+    description: 知识来源域名门禁
+  - id: source-mapping
+    suite: offline
+    package: ./internal/knowledge
+    test: TestGatewayRequiresCrawlerMappingWhenCatalogIsConfigured
+    description: 无 Catalog 映射不得引用
+  - id: attachment-metadata
+    suite: offline
+    package: ./internal/knowledge
+    test: TestGatewayUsesCrawlerMetadataAndAttachmentPriority
+    description: 引用优先使用 Catalog 官方附件
+  - id: citation-indices
+    suite: offline
+    package: ./internal/citation
+    test: TestBuildRejectsInternalPathsAndAssignsConsecutiveIndices
+    description: 引用编号连续且内部路径不外泄
+  - id: citation-empty
+    suite: offline
+    package: ./internal/citation
+    test: TestBuildPrefersNoInventedCitationForMissingEvidence
+    description: 没有 Evidence 不编造引用
+  - id: web-cache
+    suite: offline
+    package: ./internal/websearch
+    test: TestGatewayFiltersAllowlistFetchesTopNAndCachesEachStage
+    description: 官方域过滤及 Web 各层缓存
+  - id: web-redirect
+    suite: offline
+    package: ./internal/websearch
+    test: TestHTTPFetcherRejectsRedirectOutsideAllowlist
+    description: 重定向不能越过学校域名范围
+  - id: weknora-contract
+    suite: offline
+    package: ./internal/knowledge
+    test: TestWeKnoraProviderUsesOfficialKnowledgeSearchContract
+    description: WeKnora HTTP 协议映射
+  - id: cancel-terminal
+    suite: offline
+    package: ./internal/run
+    test: TestCancelWithoutLiveWorkerPersistsAndPublishesTerminalEvent
+    description: 无存活 worker 的取消终态幂等
+  - id: http-hybrid
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIHybridRoundTrip
+    description: HTTP/SSE/消息引用来源/反馈/Admin/Usage 完整联调
+  - id: wrapped-cancellation
+    suite: offline
+    package: ./internal/run
+    test: TestWrappedProviderCancellationRemainsCancelled
+    description: Provider 包装的取消信号保持 CANCELLED 而非 FAILED
+  - id: http-disabled
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIKnowledgeDisabled
+    description: 知识关闭受控回答落库且不调用 LLM
+  - id: http-reconnect
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIReconnect
+    description: 断开后后台继续运行，Last-Event-ID 与 after 正确续传
+  - id: http-cancel
+    suite: integration
+    package: ./internal/integration
+    test: TestAPICancelDuringRetrieval
+    description: 检索中取消只有一个 cancelled 终态且无最终答案
+  - id: http-retry
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIFailureThenRetry
+    description: Provider 超时终态可重试，下一次请求恢复
+  - id: http-idempotency
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIIdempotencyAndIsolation
+    description: 并发重复提交仅一次运行，跨账号不可访问
+  - id: http-cache
+    suite: integration
+    package: ./internal/integration
+    test: TestAPIKnowledgeCache
+    description: 真实 Catalog/Redis/HTTP 的知识回答缓存与版本隔离
+  - id: catalog-admission
+    suite: integration
+    package: ./internal/integration
+    test: TestCatalogAdmission
+    description: 真实 SQL 拒绝未审核、PII、未导入、停用来源和无映射资料
+  - id: restart-recovery
+    suite: integration
+    package: ./internal/integration
+    test: TestInterruptedRunRecovery
+    description: 进程中断运行恢复为唯一可重放失败终态
