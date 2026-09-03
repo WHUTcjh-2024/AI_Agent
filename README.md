@@ -21,6 +21,10 @@ Compose 会同时启动 Backend、PostgreSQL 和 Redis。仅 Backend 的 `18080`
 
 当前架构与扩展方式见 `docs/architecture-v0.10.md`，Phase 12 实现与联调见 `docs/phase-12-hybrid-agent.md`；历史阶段说明保留在 `docs/phase-*.md`。
 
+## 后续开发
+
+知识数据仍在准备中，尚未完成真实数据验收，Knowledge Provider 继续保持关闭。下一步先完成工程评测框架和内部 Admin 页面，同时准备真实微信登录接入；数据到位后按 Canary、正式导入、真实评测、校园试点推进。任务顺序、现有缺口和验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
+
 ## 质量验证
 
 ```powershell
