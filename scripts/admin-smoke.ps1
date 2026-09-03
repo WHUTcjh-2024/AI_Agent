@@ -11,6 +11,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Fresh Linux pwsh sessions may not have loaded the HTTP cmdlet assembly yet.
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 if (-not $ConsolePassword) { throw 'Set ASKU_ADMIN_TEST_PASSWORD or provide -ConsolePassword.' }
 $backend = $BackendUrl.TrimEnd('/')
 $console = $ConsoleUrl.TrimEnd('/')
