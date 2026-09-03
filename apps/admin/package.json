@@ -1,0 +1,13 @@
+{
+  "name": "asku-admin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node --check web/app.js && node --check web/api.js && node --check web/metrics.js && node --check web/render.js",
+    "test": "node --test"
+  }
+}

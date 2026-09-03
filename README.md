@@ -1,6 +1,7 @@
 # AskU Monorepo
 
 - `apps/mobile`：React Native / Expo 移动端
+- `apps/admin`：独立内部管理控制台，服务端鉴权与只读运营统计
 - `backend`：Go API 与 AgentRun/SSE 控制层
 - `contracts`：OpenAPI 与 SSE 事件契约
 - `config/schools`：学校上下文配置
@@ -23,9 +24,11 @@ Compose 会同时启动 Backend、PostgreSQL 和 Redis。仅 Backend 的 `18080`
 
 ## 后续开发
 
-知识数据仍在准备中，尚未完成真实数据验收，Knowledge Provider 继续保持关闭。Phase 13A 工程评测框架已实现，下一步推进内部 Admin 页面，同时准备真实微信登录接入；数据到位后按 Canary、正式导入、真实评测、校园试点推进。任务顺序、现有缺口和验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
+知识数据仍在准备中，尚未完成真实数据验收，Knowledge Provider 继续保持关闭。Phase 13A 工程评测和 Phase 10B 内部 Admin 控制台已实现，下一步补齐真实账号、安全凭证存储和试点成本边界；数据到位后按 Canary、正式导入、真实评测、校园试点推进。任务顺序、现有缺口和验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
 
 在仓库根目录运行 `./scripts/eval.ps1`，可自动启动独立评测依赖并执行 34 项工程检查，输出 JSON/Markdown 报告；3 个真实知识问题单独标记为 `blocked_data`。使用方式见[工程评测](evals/README.md)，实现边界与联调修复见 [Phase 13A](docs/phase-13a-engineering-evaluation.md)。
+
+Admin 启动与凭证配置见 [控制台说明](apps/admin/README.md)。[Phase 10B](docs/phase-10b-admin-console.md) 提供隔离环境启动和 `scripts/admin-smoke.ps1` 联调流程；GitHub CI 自动验证问答完成后控制台统计更新。
 
 ## 质量验证
 

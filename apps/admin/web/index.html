@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>AskU · 运营控制台</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳转到主要内容</a>
+    <section id="login-view" class="login-view" hidden>
+      <div class="login-intro">
+        <div class="brand">
+          <span class="brand-mark">A</span>AskU<span class="brand-tag"
+            >ADMIN</span
+          >
+        </div>
+        <div>
+          <span class="eyebrow">校园问答 · 运营控制台</span>
+          <h1>每一次提问，<br />都看得见。</h1>
+          <p>关注使用、质量与成本，<br />让校园问答的改进有据可依。</p>
+        </div>
+        <span class="login-footnote">内部运营工作台</span>
+      </div>
+      <div class="login-panel">
+        <form id="login-form" class="login-card">
+          <span class="eyebrow">欢迎回来</span>
+          <h2>登录控制台</h2>
+          <p>使用独立的控制台口令访问运营数据。</p>
+          <label for="password">控制台口令</label
+          ><input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            maxlength="1024"
+            autofocus
+          />
+          <p id="login-error" class="form-error" role="alert"></p>
+          <button class="button primary" id="login-button" type="submit">
+            进入工作台 <span aria-hidden="true">→</span>
+          </button>
+          <p class="login-note">会话有效期 8 小时，退出后立即失效。</p>
+        </form>
+      </div>
+    </section>
+    <div id="app-view" class="shell" hidden>
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">A</span>AskU<span class="brand-tag"
+            >ADMIN</span
+          >
+        </div>
+        <p class="nav-label">工作空间</p>
+        <nav aria-label="运营导航">
+          <a class="active" href="#overview"
+            ><span aria-hidden="true">◈</span>运营概览</a
+          ><a href="#usage"><span aria-hidden="true">▥</span>使用趋势</a
+          ><a href="#quality"><span aria-hidden="true">◎</span>质量与成本</a
+          ><a href="#questions"><span aria-hidden="true">≡</span>热门问题</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <span class="school-dot"></span>
+          <div>
+            <strong id="school-label">当前学校</strong
+            ><small>只读运营视图</small>
+          </div>
+        </div>
+      </aside>
+      <main id="main" tabindex="-1">
+        <header class="topbar">
+          <span
+            >工作空间 <span class="breadcrumb-separator">/</span> 运营概览</span
+          >
+          <div class="topbar-actions">
+            <span class="access-label">管理员</span
+            ><button id="logout" class="text-button" type="button">
+              退出登录
+            </button>
+          </div>
+        </header>
+        <div class="content" id="overview">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">OVERVIEW</span>
+              <h1>运营概览</h1>
+              <p>从使用到回答质量，掌握校园问答的运行情况。</p>
+            </div>
+            <div class="sync-control">
+              <span id="sync-status" role="status">等待同步</span
+              ><button id="refresh" class="button secondary" type="button">
+                <span aria-hidden="true">↻</span> 刷新数据
+              </button>
+            </div>
+          </div>
+          <form id="filters" class="filter-bar">
+            <div class="period-buttons" role="group" aria-label="快捷时间范围">
+              <button type="button" data-days="7">近 7 天</button
+              ><button type="button" data-days="30">近 30 天</button>
+            </div>
+            <div class="date-range">
+              <label for="from">开始日期</label
+              ><input id="from" type="date" required /><span aria-hidden="true"
+                >—</span
+              ><label class="sr-only" for="to">结束日期（含当天）</label
+              ><input id="to" type="date" required /><button
+                class="button dark"
+                type="submit"
+              >
+                应用
+              </button>
+            </div>
+            <span id="timezone" class="timezone">统计时区以服务端为准</span>
+          </form>
+          <p id="filter-error" class="form-error" role="alert"></p>
+          <div id="loading" class="loading-state" role="status">
+            <span class="spinner"></span>正在读取运营数据…
+          </div>
+          <section id="error-state" class="error-state" role="alert" hidden>
+            <span class="state-symbol">!</span>
+            <h2>暂时无法读取数据</h2>
+            <p id="error-message"></p>
+            <button id="retry" class="button secondary" type="button">
+              重新加载
+            </button>
+          </section>
+          <div id="dashboard" hidden>
+            <div id="empty-notice" class="notice" hidden>
+              <span aria-hidden="true">○</span>
+              <div>
+                <strong>这个时间段还没有提问记录</strong>
+                <p>可以调整日期范围；新提问完成后，刷新即可查看统计。</p>
+              </div>
+            </div>
+            <section id="kpis" class="kpi-grid" aria-label="核心指标"></section>
+            <div class="main-grid" id="usage">
+              <section class="panel trend-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>使用趋势</h2>
+                    <p>按统计时区逐日汇总</p>
+                  </div>
+                  <span class="legend"
+                    ><i class="legend-question"></i>提问数
+                    <i class="legend-user"></i>活跃用户</span
+                  >
+                </div>
+                <div id="trend-chart" class="chart-container"></div>
+                <details class="data-details">
+                  <summary>查看每日明细</summary>
+                  <div id="daily-table" class="table-scroll"></div>
+                </details>
+              </section>
+              <section class="panel routes-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>回答路径</h2>
+                    <p>全部运行的路由分布</p>
+                  </div>
+                </div>
+                <div id="routes"></div>
+              </section>
+            </div>
+            <div class="section-heading" id="quality">
+              <h2>质量与成本</h2>
+              <span>统一统计口径 · 当前时间范围</span>
+            </div>
+            <div class="detail-grid">
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>回答质量</h3>
+                  <span class="panel-index">01</span>
+                </div>
+                <div id="quality-metrics"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>响应与消耗</h3>
+                  <span class="panel-index">02</span>
+                </div>
+                <div id="cost-metrics"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>用户与留存</h3>
+                  <span class="panel-index">03</span>
+                </div>
+                <div id="user-metrics"></div>
+              </section>
+            </div>
+            <div class="bottom-grid" id="questions">
+              <section class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>热门问题</h2>
+                    <p>按提问次数排序，最多展示 10 条</p>
+                  </div>
+                  <span class="small-tag">TOP QUESTIONS</span>
+                </div>
+                <div id="top-questions" class="table-scroll"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>错误分布</h2>
+                    <p>包含主动取消及运行失败</p>
+                  </div>
+                </div>
+                <div id="errors"></div>
+              </section>
+            </div>
+            <footer class="page-footer">
+              <span id="window-summary"></span
+              ><span>AskU · 只读管理控制台</span>
+            </footer>
+          </div>
+        </div>
+      </main>
+    </div>
+    <noscript>请启用 JavaScript 以使用运营控制台。</noscript>
+  </body>
+</html>

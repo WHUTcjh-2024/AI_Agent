@@ -8,6 +8,92 @@ permissions:
   contents: read
 
 jobs:
+  admin:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: asku_eval
+          POSTGRES_USER: asku_eval
+          POSTGRES_PASSWORD: asku_eval_local
+        ports:
+          - 15433:5432
+        options: >-
+          --health-cmd "pg_isready -U asku_eval -d asku_eval"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 16380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/admin/go.mod
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check formatting, sessions and proxy
+        working-directory: apps/admin
+        run: |
+          test -z "$(gofmt -l .)"
+          go test -race ./...
+          go vet ./...
+          npm test
+          npm run check
+      - name: Build console and backend
+        run: |
+          (cd apps/admin && go build -o "$RUNNER_TEMP/asku-admin" ./cmd/server)
+          (cd backend && go build -o "$RUNNER_TEMP/asku-api" ./cmd/api)
+          docker build --tag asku-admin-ci apps/admin
+      - name: Integrate console, backend, SSE and metrics
+        env:
+          ASKU_HTTP_ADDR: 127.0.0.1:18081
+          ASKU_DATABASE_URL: postgres://asku_eval:asku_eval_local@127.0.0.1:15433/asku_eval?sslmode=disable
+          ASKU_REDIS_ADDR: 127.0.0.1:16380
+          ASKU_SCHOOL_CONFIG: config/schools/whut.yaml
+          ASKU_DEV_AUTH_ENABLED: 'true'
+          ASKU_AGENT_MODE: policy
+          ASKU_LLM_PROVIDER: mock
+          ASKU_LLM_MODEL: asku-mock
+          ASKU_WEB_SEARCH_PROVIDER: mock
+          ASKU_KNOWLEDGE_PROVIDER: disabled
+          ASKU_ADMIN_TOKEN: asku-local-admin-do-not-use-in-production
+          ASKU_ADMIN_API_TOKEN: asku-local-admin-do-not-use-in-production
+          ASKU_ADMIN_PASSWORD: asku-ci-console-test-password
+          ASKU_ADMIN_TEST_PASSWORD: asku-ci-console-test-password
+          ASKU_ADMIN_ADDR: 127.0.0.1:18090
+          ASKU_ADMIN_API_BASE_URL: http://127.0.0.1:18081
+          ASKU_ADMIN_SECURE_COOKIE: 'false'
+        run: |
+          set -euo pipefail
+          mkdir -p evals/reports/admin-ci
+          "$RUNNER_TEMP/asku-api" > evals/reports/admin-ci/backend.log 2>&1 &
+          backend_pid=$!
+          "$RUNNER_TEMP/asku-admin" > evals/reports/admin-ci/admin.log 2>&1 &
+          admin_pid=$!
+          trap 'kill "$backend_pid" "$admin_pid" 2>/dev/null || true' EXIT
+          for url in http://127.0.0.1:18081/healthz http://127.0.0.1:18090/healthz; do
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent "$url" >/dev/null; then break; fi
+              sleep 1
+            done
+            curl --fail --silent "$url" >/dev/null
+          done
+          pwsh -NoProfile -File scripts/admin-smoke.ps1 -ReportPath evals/reports/admin-ci/smoke.json
+      - name: Upload admin integration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-integration
+          path: evals/reports/admin-ci/
+          if-no-files-found: warn
+
   evaluation:
     runs-on: ubuntu-latest
     services:
