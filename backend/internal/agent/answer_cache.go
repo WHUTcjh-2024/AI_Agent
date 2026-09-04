@@ -79,6 +79,8 @@ func (c *VersionedAnswerCache) key(schoolID, question string) (string, error) {
 		return "", fmt.Errorf("school %q has no knowledge version", schoolID)
 	}
 	digest := sha256.Sum256([]byte(normalizedQuestion))
+	// Discard answers produced before content-bound cleaning admission existed.
+	version = "admission-v1-" + version
 	return fmt.Sprintf("answer:%s:%s:%x", cacheKeySegment(schoolID), cacheKeySegment(version), digest[:16]), nil
 }
 

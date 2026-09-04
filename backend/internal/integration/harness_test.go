@@ -342,6 +342,11 @@ func (h *harness) seedKnowledge() {
 	h.execSQL(`INSERT INTO knowledge.sources(id,school_id,source_name,official_url,active) VALUES('source','eval','Fixture','https://university.example/rules',true)`)
 	h.execSQL(`INSERT INTO knowledge.documents(id,school_id,source_id,title,publish_date,rag_eligible,pii_detected,review_status,local_file_path)
 		VALUES('document','eval','source','工程合成资料','2026-09-01',true,false,'ACCEPTED','/private/never-publish.pdf')`)
+	h.execSQL(`UPDATE knowledge.documents SET parse_status='PARSED',pii_scan_status='CLEAR',
+		content_hash='fixture-hash',pii_content_hash='fixture-hash',content_chars=200,
+		secondary_topic='scholarship',admission_status='READY',admission_version='admission-v1',
+		source_url='https://university.example/rules',canonical_url='https://university.example/rules'
+		WHERE id='document'`)
 	h.execSQL(`INSERT INTO knowledge.weknora_mappings(school_id,weknora_knowledge_id,asku_document_id,import_status) VALUES('eval','kb-document','document','IMPORTED')`)
 }
 

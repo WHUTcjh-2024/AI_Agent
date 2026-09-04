@@ -15,6 +15,16 @@ dependencies = [
     "PyYAML>=6,<7",
 ]
 
+[project.optional-dependencies]
+cleaning = [
+    "PyMuPDF>=1.26,<2",
+    "python-docx>=1.2,<2",
+    "openpyxl>=3.1,<4",
+    "xlrd>=2,<3",
+    "olefile>=0.47,<1",
+    "striprtf>=0.0.29,<1",
+]
+
 [tool.setuptools.packages.find]
 include = ["asku*"]
 

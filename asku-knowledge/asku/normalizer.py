@@ -45,7 +45,7 @@ DATE_PATTERNS = [
     re.compile(r"(20\d{2})\s*年\s*(\d{1,2})\s*月"),
 ]
 
-PUBLISH_HINTS = ["发布时间", "发布日期", "发表时间", "发布：", "日期：", "时间："]
+PUBLISH_HINTS = ["发布时间", "发布日期", "发表时间", "发布："]
 DEPARTMENT_HINTS = ["发布部门", "发布单位", "信息来源", "来源：", "作者：", "编辑：", "撰稿"]
 
 
@@ -225,6 +225,7 @@ def _node_to_markdown(node: Tag, depth: int = 0) -> Tuple[str, int]:
 def _pick_main_container(soup: BeautifulSoup) -> Tag:
     """选择正文主容器：优先常见内容类名，其次取文本最密集的块。"""
     preferred = [
+        ".TRS_Editor", ".TRS_UEDITOR", ".v_news_content", "#vsb_content",
         "[class*=content]", "[class*=article]", "[class*=detail]",
         "[id*=content]", "[id*=article]", "[id*=detail]",
         "article", "main",
@@ -233,7 +234,7 @@ def _pick_main_container(soup: BeautifulSoup) -> Tag:
         node = soup.select_one(selector)
         if node:
             text = node.get_text(" ", strip=True)
-            if len(text) > 200:
+            if text and (selector in preferred[:4] or len(text) > 200):
                 return node
 
     # 兜底：找文本最长的 div
@@ -260,6 +261,10 @@ def normalize_html(
     soup = BeautifulSoup(html, "lxml")
 
     title = _extract_title(soup)
+    # Publishing metadata is often in a header removed during body cleaning.
+    original_plain = soup.get_text("\n", strip=True)
+    publish_date = _extract_date(soup, original_plain)
+    department = _extract_department(soup, original_plain)
 
     # 删除噪声节点
     for selector in NOISE_SELECTORS:
@@ -285,8 +290,6 @@ def normalize_html(
     markdown, tables = _node_to_markdown(container)
     plain = soup.get_text("\n", strip=True)
 
-    publish_date = _extract_date(soup, plain)
-    department = _extract_department(soup, plain)
 
     phones = sorted(set(re.findall(r"(?:\d{3,4}-)?\d{7,8}(?:-\d{1,4})?", plain)))[:10]
     phones = [p for p in phones if len(re.sub(r"\D", "", p)) >= 7][:5]
@@ -315,7 +318,7 @@ def normalize_html(
     return NormalizedPage(
         title=title,
         markdown=_clean_text(markdown_body),
-        text=_clean_text(plain),
+        text=_clean_text(container.get_text("\n", strip=True)),
         publish_date=publish_date,
         department=department,
         contacts=contacts,
@@ -325,7 +328,7 @@ def normalize_html(
         important_links=important_links[:30],
         heading_outline=outline,
         table_count=tables,
-        content_chars=len(_clean_text(plain)),
+        content_chars=len(_clean_text(container.get_text("\n", strip=True))),
     )
 
 

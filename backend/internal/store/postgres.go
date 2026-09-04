@@ -57,7 +57,9 @@ func (p *Postgres) ResolveEvidence(ctx context.Context, schoolID, knowledgeID st
 	var attachmentID, attachmentName, attachmentType, attachmentURL, attachmentParent string
 	err := p.pool.QueryRow(ctx, `
 		SELECT d.id,d.title,src.source_name,src.department,d.publish_date,
-		       src.source_type,d.document_type,src.official_url,src.canonical_url,
+		       src.source_type,d.document_type,
+		       COALESCE(NULLIF(d.source_url,''),src.official_url),
+		       COALESCE(NULLIF(d.canonical_url,''),src.canonical_url),
 		       COALESCE(a.id,''),COALESCE(a.name,''),COALESCE(a.document_type,''),
 		       COALESCE(a.attachment_original_url,''),
 		       COALESCE(NULLIF(a.parent_page_url,''),d.parent_page_url,''),
@@ -71,8 +73,10 @@ func (p *Postgres) ResolveEvidence(ctx context.Context, schoolID, knowledgeID st
 		  AND wm.import_status='IMPORTED'
 		  AND d.rag_eligible=true AND d.pii_detected=false AND d.review_status='ACCEPTED'
 		  AND src.active=true
+	`+documentAdmissionSQL+`
 		  AND (wm.attachment_id IS NULL OR (
 		      a.id IS NOT NULL AND a.rag_eligible=true AND a.pii_detected=false AND a.review_status='ACCEPTED'
+	`+attachmentAdmissionSQL+`
 		  ))
 	`, schoolID, knowledgeID).Scan(
 		&metadata.AskUDocumentID, &metadata.Title, &metadata.SourceName, &metadata.Department, &metadata.PublishedAt,
@@ -88,11 +92,12 @@ func (p *Postgres) ResolveEvidence(ctx context.Context, schoolID, knowledgeID st
 	}
 	metadata.AttachmentURL = attachmentURL
 	rows, err := p.pool.Query(ctx, `
-		SELECT id,name,document_type,attachment_original_url,
-		       COALESCE(NULLIF(parent_page_url,''),$2)
-		FROM knowledge.attachments
-		WHERE document_id=$1 AND rag_eligible=true AND pii_detected=false AND review_status='ACCEPTED'
-		ORDER BY created_at,id
+		SELECT a.id,a.name,a.document_type,a.attachment_original_url,
+		       COALESCE(NULLIF(a.parent_page_url,''),$2)
+		FROM knowledge.attachments a
+		WHERE a.document_id=$1 AND a.rag_eligible=true AND a.pii_detected=false AND a.review_status='ACCEPTED'
+	`+attachmentAdmissionSQL+`
+		ORDER BY a.created_at,a.id
 	`, metadata.AskUDocumentID, metadata.ParentPageURL)
 	if err != nil {
 		return knowledge.DocumentMetadata{}, false, err
