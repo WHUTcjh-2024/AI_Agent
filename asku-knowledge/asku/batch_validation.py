@@ -10,7 +10,15 @@ from pathlib import Path
 
 import yaml
 
-from .admission import canonical_text, evaluate, text_hash
+from .admission import RULE_VERSION, canonical_text, evaluate, text_hash
+
+
+def _write_validation(batch: Path, report: dict) -> None:
+    temporary = batch / "validation.json.tmp"
+    temporary.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    temporary.replace(batch / "validation.json")
 
 
 def finalize_and_verify(batch: Path, school_path: Path, taxonomy_path: Path) -> dict:
@@ -18,6 +26,8 @@ def finalize_and_verify(batch: Path, school_path: Path, taxonomy_path: Path) -> 
     receipt = json.loads((batch / "batch.json").read_text(encoding="utf-8"))
     if receipt.get("status") != "COMPLETE":
         raise ValueError("batch_not_complete")
+    # Invalidate a previous PASSED receipt before touching or checking artifacts.
+    _write_validation(batch, {"status": "VALIDATING"})
     school = yaml.safe_load(school_path.read_text(encoding="utf-8"))
     taxonomy = yaml.safe_load(taxonomy_path.read_text(encoding="utf-8"))
     conn = sqlite3.connect(batch / "catalog.sqlite")
@@ -51,6 +61,12 @@ def finalize_and_verify(batch: Path, school_path: Path, taxonomy_path: Path) -> 
             )
             if decision.eligible != bool(d["rag_eligible"]):
                 failures["admission_mismatch"] += 1
+            if (
+                d["admission_status"] != ("READY" if decision.eligible else "BLOCKED")
+                or d["admission_version"] != RULE_VERSION
+                or json.loads(d["admission_reasons"]) != list(decision.reasons)
+            ):
+                failures["admission_receipt_mismatch"] += 1
             if decision.eligible:
                 ready.append(d)
         failures["orphan_relations"] = conn.execute(
@@ -127,9 +143,10 @@ def finalize_and_verify(batch: Path, school_path: Path, taxonomy_path: Path) -> 
                 for name in exports
             },
         }
-        (batch / "validation.json").write_text(
-            json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        _write_validation(batch, report)
         return report
+    except Exception as exc:
+        _write_validation(batch, {"status": "FAILED", "error": type(exc).__name__})
+        raise
     finally:
         conn.close()

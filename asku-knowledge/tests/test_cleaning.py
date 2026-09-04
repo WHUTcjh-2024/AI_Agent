@@ -1,5 +1,6 @@
 import hashlib
 import io
+import json
 import sqlite3
 import tempfile
 import unittest
@@ -345,9 +346,28 @@ class BatchTests(unittest.TestCase):
             result = finalize_and_verify(output, school, taxonomy)
             self.assertEqual(result["status"], "PASSED")
             self.assertEqual(result["ready_attachments"], 1)
+            with closing(sqlite3.connect(output / "catalog.sqlite")) as conn, conn:
+                conn.execute(
+                    "UPDATE documents SET admission_status='BLOCKED' WHERE id='p'"
+                )
+            with self.assertRaisesRegex(ValueError, "admission_receipt_mismatch"):
+                finalize_and_verify(output, school, taxonomy)
+            self.assertEqual(
+                json.loads((output / "validation.json").read_text())["status"], "FAILED"
+            )
+            with closing(sqlite3.connect(output / "catalog.sqlite")) as conn, conn:
+                conn.execute(
+                    "UPDATE documents SET admission_status='READY' WHERE id='p'"
+                )
+            self.assertEqual(
+                finalize_and_verify(output, school, taxonomy)["status"], "PASSED"
+            )
             (output / "normalized/p.md").write_text("篡改正文", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "batch_validation_failed"):
                 finalize_and_verify(output, school, taxonomy)
+            self.assertEqual(
+                json.loads((output / "validation.json").read_text())["status"], "FAILED"
+            )
 
 
 if __name__ == "__main__":
