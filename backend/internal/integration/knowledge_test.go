@@ -99,8 +99,10 @@ func TestCatalogAdmission(t *testing.T) {
 	if err != nil || strings.Contains(string(encoded), "/private/") {
 		t.Fatal("Catalog exposed storage paths")
 	}
-	h.execSQL(`INSERT INTO knowledge.attachments(id,document_id,name,attachment_original_url,rag_eligible,pii_detected,review_status)
-		VALUES('attachment','document','Fixture PDF','https://university.example/fixture.pdf',true,false,'REVIEW')`)
+	h.execSQL(`INSERT INTO knowledge.attachments(id,document_id,name,attachment_original_url,rag_eligible,pii_detected,review_status,
+		admission_status,parse_status,pii_scan_status,content_hash,pii_content_hash,relation_status)
+		VALUES('attachment','document','Fixture PDF','https://university.example/fixture.pdf',true,false,'REVIEW',
+		'READY','PARSED','CLEAR','attachment-hash','attachment-hash','RESOLVED')`)
 	h.execSQL(`UPDATE knowledge.weknora_mappings SET attachment_id='attachment'`)
 	if _, found, err := h.db.ResolveEvidence(t.Context(), "eval", "kb-document"); err != nil || found {
 		t.Fatal("unreviewed attachment admitted")
