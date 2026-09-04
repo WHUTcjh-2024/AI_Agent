@@ -46,7 +46,8 @@ def finalize_and_verify(batch: Path, school_path: Path, taxonomy_path: Path) -> 
                 if not path.is_relative_to(batch / "normalized") or not path.is_file():
                     failures["text_path_invalid"] += 1
                     continue
-                text = path.read_text(encoding="utf-8", errors="strict")
+                # Text-mode reads normalize CRLF and cannot verify a byte hash.
+                text = path.read_bytes().decode("utf-8", errors="strict")
                 if hashlib.sha256(text.encode()).hexdigest() != d["normalized_sha256"]:
                     failures["text_changed_after_cleaning"] += 1
             if len(canonical_text(text)) != d["content_chars"]:

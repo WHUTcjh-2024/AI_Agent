@@ -242,8 +242,8 @@ class BatchTests(unittest.TestCase):
                 + '<a href="policy.txt">附件</a></main></html>',
                 encoding="utf-8",
             )
-            attachment.write_text(
-                "学生应在指定时间提交申请材料。" * 30, encoding="utf-8"
+            attachment.write_bytes(
+                ("学生应在指定时间提交申请材料。\r\n" * 30).encode("utf-8")
             )
             base = dict(
                 id="p",
@@ -343,6 +343,10 @@ class BatchTests(unittest.TestCase):
             self.assertEqual(summary["linked_attachments"], 1)
             self.assertEqual(summary["ready_documents"], 2)
             self.assertEqual(before, hashlib.sha256(source.read_bytes()).hexdigest())
+            self.assertEqual(
+                (output / "normalized/a.md").read_bytes(),
+                attachment.read_bytes().strip(),
+            )
             result = finalize_and_verify(output, school, taxonomy)
             self.assertEqual(result["status"], "PASSED")
             self.assertEqual(result["ready_attachments"], 1)

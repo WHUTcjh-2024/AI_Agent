@@ -343,7 +343,8 @@ def run_batch(
         path = output / "normalized" / (d["id"] + ".md")
         path.parent.mkdir(exist_ok=True)
         if text:
-            path.write_text(text, encoding="utf-8")
+            # Preserve the exact bytes fingerprinted below, including OCR CRLF.
+            path.write_bytes(text.encode("utf-8"))
         digest = text_hash(text) if text else ""
         d.update(
             {

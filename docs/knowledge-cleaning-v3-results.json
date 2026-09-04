@@ -1,0 +1,205 @@
+{
+  "generated_at": "2026-09-04T13:23:52.861988+00:00",
+  "school_id": "whut",
+  "batch_id": "20260904-v3b",
+  "scope": "offline_staging_only",
+  "source_unchanged": true,
+  "raw_verification": {
+    "documents_checked": 10479,
+    "unique_files_checked": 10479,
+    "hash_mismatches": 0
+  },
+  "measurement_notes": [
+    "Before and after_original use the same 9470 original document IDs.",
+    "Before content_chars are legacy claims and do not prove text extraction.",
+    "The full batch additionally includes 1009 recovered parent pages, all pending review.",
+    "READY is a technical admission result, not production import or answer accuracy.",
+    "Admission reasons can overlap; their sum is not a document count.",
+    "OCR output is REVIEW. Previous PII holds are not cleared automatically.",
+    "Legacy quality scores were not recomputed and are not a v3 quality measure."
+  ],
+  "before": {
+    "documents": 9470,
+    "attachments": 3609,
+    "rag_eligible_flags": 3076,
+    "rag_flags_without_accepted_review": 1139,
+    "positive_content_chars": 9470,
+    "attachment_positive_content_chars": 3609,
+    "review_status": {
+      "PII_REVIEW": 1709,
+      "REVIEW": 1466,
+      "UNCERTAIN": 4260,
+      "ACCEPTED": 2035
+    },
+    "pii_held": 1709,
+    "duplicates": 0,
+    "publish_date_present": 5543
+  },
+  "after_original": {
+    "documents": 9470,
+    "attachments": 3609,
+    "rag_eligible_flags": 738,
+    "rag_flags_without_accepted_review": 0,
+    "positive_content_chars": 9344,
+    "attachment_positive_content_chars": 3483,
+    "review_status": {
+      "PII_REVIEW": 1819,
+      "REVIEW": 1473,
+      "UNCERTAIN": 5432,
+      "ACCEPTED": 746
+    },
+    "pii_held": 1819,
+    "duplicates": 682,
+    "publish_date_present": 8292
+  },
+  "after_full_batch": {
+    "documents": 10479,
+    "attachments": 3609,
+    "rag_eligible_flags": 738,
+    "rag_flags_without_accepted_review": 0,
+    "positive_content_chars": 10353,
+    "attachment_positive_content_chars": 3483,
+    "review_status": {
+      "PII_REVIEW": 1821,
+      "REVIEW": 2480,
+      "UNCERTAIN": 5432,
+      "ACCEPTED": 746
+    },
+    "pii_held": 1821,
+    "duplicates": 707,
+    "publish_date_present": 9167
+  },
+  "cleaning": {
+    "batch_created_at": "2026-09-04T12:02:56.149486+00:00",
+    "input_sha256": "2459eb525b594237deddae43e95fddae5a96def050c15bad4fbd9aebdddf9071",
+    "original_documents": 9470,
+    "documents": 10479,
+    "link_recovery": {
+      "pages_examined": 13168,
+      "recovered_parent_documents": 1009,
+      "source_page_errors": {}
+    },
+    "parse_status": {
+      "PARSED": 9316,
+      "REVIEW": 1037,
+      "FAILED": 42,
+      "EMPTY": 84
+    },
+    "attachment_parse_status": {
+      "PARSED": 3088,
+      "REVIEW": 395,
+      "FAILED": 42,
+      "EMPTY": 84
+    },
+    "format_counts": {
+      "archive": 106,
+      "pdf": 1959,
+      "unknown": 20,
+      "doc": 634,
+      "ole": 1,
+      "html": 6870,
+      "docx": 461,
+      "xls": 133,
+      "xlsx": 196,
+      "rar": 90,
+      "zip": 5,
+      "text": 1,
+      "rtf": 3
+    },
+    "parse_errors": {
+      "ocr_requires_review": 308,
+      "file_budget_exceeded": 6,
+      "legacy_conversion_required": 2,
+      "short_body": 638,
+      "archive_member_not_parsed": 710,
+      "unsupported_format": 14,
+      "ValueError": 5,
+      "text_budget_exceeded": 2,
+      "short_text": 536,
+      "page_1:image_budget_exceeded": 2,
+      "TimeoutExpired": 2,
+      "archive_depth_or_members_exceeded": 5,
+      "document_time_budget_exceeded": 2,
+      "page_budget_exceeded": 3,
+      "cell_budget_exceeded": 3,
+      "replacement_characters": 1
+    },
+    "ready_documents": 738,
+    "ready_attachments": 240,
+    "linked_attachments": 3604,
+    "relations": 3627,
+    "bundles": 1682,
+    "pii_scan_status": {
+      "NOT_SCANNED": 263,
+      "CLEAR": 10001,
+      "HIT": 215
+    },
+    "ocr_pages": 2809,
+    "admission_reasons": {
+      "review_required": 9733,
+      "invalid_text_length": 792,
+      "pii_not_cleared": 1956,
+      "pii_scan_stale": 137,
+      "unclassified_topic": 7408,
+      "parse_not_verified": 1163,
+      "text_artifact_missing": 126,
+      "duplicate_content": 707,
+      "discovery_document": 398,
+      "attachment_parent_unresolved": 5
+    },
+    "gate_violations": 0,
+    "knowledge_imported": false
+  },
+  "validation": {
+    "status": "PASSED",
+    "documents_checked": 10479,
+    "ready_documents": 738,
+    "ready_attachments": 240,
+    "violations": {
+      "orphan_relations": 0,
+      "orphan_bundle_parents": 0,
+      "broken_resolved_parents": 0
+    },
+    "export_sha256": {
+      "ready_documents.jsonl": "bea0e054e72640a23463b269cf6bec33c4f7090532cb49068178a8459595e557",
+      "ready_attachments.jsonl": "d335435186b5db997b19c8b8226fa7c89d62915bd4ccefc147cbbe547491ec48",
+      "bundles.jsonl": "955052091b999c1cf9dbe6ed7131219fef9753edfd6b423092c7f40824c95f74",
+      "relations.jsonl": "1eae542613a082359efdb98411488aae0a4e9f358d6b4d8789c15bdb680a37e4"
+    }
+  },
+  "text_byte_recovery": {
+    "restored_at": "2026-09-04T13:18:53.766055+00:00",
+    "documents_checked": 10353,
+    "artifacts_rewritten": 10271,
+    "catalog_fingerprints_changed": false,
+    "source": "validated_extraction_cache"
+  },
+  "unresolved_attachment_audit": {
+    "attachments": 5,
+    "matching_raw_html_files": 4,
+    "raw_html_files_without_catalog_url": 4,
+    "canonical_url_metadata_present": false,
+    "decision": "Remain blocked until parent URL provenance is recovered; do not guess from filenames."
+  },
+  "config_sha256": {
+    "config/schools/whut.yaml": "07263a13c813198e924074732bd66a9ac24879fe2ab2473c4ec250fe979ccb70",
+    "asku-knowledge/config/taxonomy.yaml": "f8004cacb85dadb47c23b724903c8dedfcf1ef750a3c05f505027de32542ca0c"
+  },
+  "parser_environment": {
+    "PyMuPDF": "1.28.2",
+    "python-docx": "1.2.0",
+    "openpyxl": "3.1.2",
+    "xlrd": "2.0.2",
+    "olefile": "0.47",
+    "striprtf": "0.0.33",
+    "beautifulsoup4": "4.12.2",
+    "lxml": "6.0.2"
+  },
+  "needs_mass_recrawl": false,
+  "next_steps": [
+    "Review OCR, publication validity, taxonomy and retained PII holds before promotion.",
+    "Extend parsers for legacy XML spreadsheets and examine bounded/failed archives locally.",
+    "Inspect unresolved attachment URLs and damaged originals, then recrawl only confirmed missing or changed sources.",
+    "After approval, run the documented Canary and rebuild WeKnora mappings from this batch."
+  ]
+}
