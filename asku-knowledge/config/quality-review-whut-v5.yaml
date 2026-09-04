@@ -1,0 +1,357 @@
+version: 2
+extends: quality-review-whut-v4.yaml
+review_note: V5增量逐份核对正文身份、适用范围与结构；人员名单和考试监考表排除。
+reviews:
+- id: whd_7bf6e443cce1cfef48a812697177a610
+  title: 2024版本科生培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版本科培养方案
+  scope: 仅用于2024版本科培养方案且限定《2024版本科生培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 2024版本科生培养方案
+  version_label: '2024'
+  version_family: whut-auto-undergraduate-program-plan
+- id: wha_111dda6601b9b4616e6069c0a2bd17dc
+  title: 能源与动力工程专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版且仅限该专业
+  scope: 仅用于2024版且仅限该专业且限定《能源与动力工程专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whd_7bf6e443cce1cfef48a812697177a610
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: wha_15ef373b824eeac72e8abf5d32823d4b
+  title: 车辆工程专业（国际班）专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版且仅限该专业
+  scope: 仅用于2024版且仅限该专业且限定《车辆工程专业（国际班）专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whd_7bf6e443cce1cfef48a812697177a610
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: wha_6c31738953126812dc76ce2632ab18bf
+  title: 车辆工程专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版且仅限该专业
+  scope: 仅用于2024版且仅限该专业且限定《车辆工程专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whd_7bf6e443cce1cfef48a812697177a610
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: wha_b8528a161cd032bece1f7631a3cd3283
+  title: 汽车服务工程专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版且仅限该专业
+  scope: 仅用于2024版且仅限该专业且限定《汽车服务工程专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whd_7bf6e443cce1cfef48a812697177a610
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: wha_bf31cfb38ab1e942060cf0d36338f713
+  title: 储能科学与工程专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 2024版且仅限该专业
+  scope: 仅用于2024版且仅限该专业且限定《储能科学与工程专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whd_7bf6e443cce1cfef48a812697177a610
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: whp_12e07fc1870185cfd92d6753bdc150c9
+  title: 创业管理专业2024版本科培养方案-武汉理工大学创业学院
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 创业管理专业2024版
+  scope: 仅用于创业管理专业2024版且限定《创业管理专业2024版本科培养方案-武汉理工大学创业学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 创业管理专业2024版本科培养方案
+- id: wha_5a40f89a627aa88fa65775899813110b
+  title: 创业管理专业2024 版本科培养方案
+  topic: program_plan
+  education: UNDERGRADUATE
+  type: PROGRAM_PLAN
+  period: 创业管理专业2024版
+  scope: 仅用于创业管理专业2024版且限定《创业管理专业2024 版本科培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 计划学制
+  parent: whp_12e07fc1870185cfd92d6753bdc150c9
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 计划学制
+- id: whp_842e9282af3a07e5be62172236b01270
+  title: 【汽车学院】汽车工程学院研究生奖学金评审办法
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 汽车工程学院2026年审议版本
+  scope: 仅用于汽车工程学院2026年审议版本且限定《【汽车学院】汽车工程学院研究生奖学金评审办法》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 研究生奖学金评审办法
+- id: wha_8296ae4c5caa28f38f03334a7e410786
+  title: 汽车工程学院研究生国家奖学金评审细则（2026）
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 汽车工程学院2026年国家奖学金细则
+  scope: 仅用于汽车工程学院2026年国家奖学金细则且限定《汽车工程学院研究生国家奖学金评审细则（2026）》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 博士研究生国家奖学金奖励标准
+  parent: whp_842e9282af3a07e5be62172236b01270
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 博士研究生国家奖学金奖励标准
+- id: wha_a5dd6bcc76060a4de38261f763fee2e0
+  title: 汽车工程学院研究生学业奖学金评审细则（2026）
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 汽车工程学院2026年学业奖学金细则
+  scope: 仅用于汽车工程学院2026年学业奖学金细则且限定《汽车工程学院研究生学业奖学金评审细则（2026）》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 研究生学业奖学金
+  parent: whp_842e9282af3a07e5be62172236b01270
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 研究生学业奖学金
+- id: whp_483dd5efb34b376866a2b60c3a261c00
+  title: 理学部博士国家奖学金评审办法-2026版 发布时间：2026-04-23
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 理学部博士生2026版
+  scope: 仅用于理学部博士生2026版且限定《理学部博士国家奖学金评审办法-2026版 发布时间：2026-04-23》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 博士国家奖学金评审办法
+- id: wha_77d33d69acf96c225ccecbcdd1628c90
+  title: 理学部博士研究生国家奖学金评审办法（试行）
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 理学部博士生2026版
+  scope: 仅用于理学部博士生2026版且限定《理学部博士研究生国家奖学金评审办法（试行）》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 奖励对象
+  parent: whp_483dd5efb34b376866a2b60c3a261c00
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 奖励对象
+- id: whd_158b106f0a2bd85c06c9fd5a024640e8
+  title: 【公示】武汉理工大学航运学院研究生奖学金评定办法-武汉理工大学航运学院
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 航运学院2026年公示版本
+  scope: 仅用于航运学院2026年公示版本且限定《【公示】武汉理工大学航运学院研究生奖学金评定办法-武汉理工大学航运学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 研究生奖学金评定办法
+- id: wha_b05966f82f1b568f457660aba98ce4ff
+  title: 航运学院研究生奖学金管理办法
+  topic: scholarship
+  education: GRADUATE
+  type: POLICY_REGULATION
+  period: 航运学院2026年公示版本
+  scope: 仅用于航运学院2026年公示版本且限定《航运学院研究生奖学金管理办法》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 研究生奖学金包括
+  parent: whd_158b106f0a2bd85c06c9fd5a024640e8
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 研究生奖学金包括
+- id: whd_ca82f64628e870870d6401fa55be3c78
+  title: 研究生培养方案（2022）
+  topic: graduate_training
+  education: GRADUATE
+  type: PROGRAM_PLAN
+  period: 计算机学院2022版研究生培养方案
+  scope: 仅用于计算机学院2022版研究生培养方案且限定《研究生培养方案（2022）》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 研究生培养方案（2022）
+  version_label: '2022'
+  version_family: whut-csai-graduate-program-plan
+- id: wha_12eb426f2291a1d11a3c1d05121b399c
+  title: 电子信息（计算机技术、软件工程）硕士专业学位研究生培养方案
+  topic: graduate_training
+  education: GRADUATE
+  type: PROGRAM_PLAN
+  period: 计算机学院2022版且仅限该培养类型
+  scope: 仅用于计算机学院2022版且仅限该培养类型且限定《电子信息（计算机技术、软件工程）硕士专业学位研究生培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 学制
+  parent: whd_ca82f64628e870870d6401fa55be3c78
+- id: wha_aa12a23f0a6463ac778e05d1dde9ae13
+  title: 计算机科学与技术学术学位硕士研究生培养方案
+  topic: graduate_training
+  education: GRADUATE
+  type: PROGRAM_PLAN
+  period: 计算机学院2022版且仅限该培养类型
+  scope: 仅用于计算机学院2022版且仅限该培养类型且限定《计算机科学与技术学术学位硕士研究生培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 学制
+  parent: whd_ca82f64628e870870d6401fa55be3c78
+- id: wha_d096feecf3383f0f8cd06e68adb207da
+  title: 计算机科学与技术学术学位博士研究生培养方案
+  topic: graduate_training
+  education: GRADUATE
+  type: PROGRAM_PLAN
+  period: 计算机学院2022版且仅限该培养类型
+  scope: 仅用于计算机学院2022版且仅限该培养类型且限定《计算机科学与技术学术学位博士研究生培养方案》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 学制
+  parent: whd_ca82f64628e870870d6401fa55be3c78
+- id: whd_e8c24944dfe24e08bb91d16b7a9ec46f
+  title: 【本科生院】关于2025-2026学年春季学期课程预选的通知-武汉理工大学航运学院
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: ANNUAL_NOTICE
+  period: 2025-2026学年春季学期
+  scope: 仅用于2025-2026学年春季学期且限定《【本科生院】关于2025-2026学年春季学期课程预选的通知-武汉理工大学航运学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 课程预选
+- id: wha_b54f108f022d9223c9f969c48094c97a
+  title: Q：专业培养方案在哪个网站下载？
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: PROCEDURE_GUIDE
+  period: 按学生所在年级培养方案版本
+  scope: 仅用于按学生所在年级培养方案版本且限定《Q：专业培养方案在哪个网站下载？》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 专业培养方案在哪个网站下载
+  parent: whd_e8c24944dfe24e08bb91d16b7a9ec46f
+- id: whd_2dff6a44d5ae86fb0bef94f2eb3927b9
+  title: 【本科生院】关于2026年秋季学期本科生选课安排的通知
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: ANNUAL_NOTICE
+  period: 2026年秋季学期
+  scope: 仅用于2026年秋季学期且限定《【本科生院】关于2026年秋季学期本科生选课安排的通知》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 选课
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 选课
+- id: wha_e389b71709542d1d056daaba67756eb0
+  title: 2026年秋季学期通识选修课程目录
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: APPLICATION_MATERIAL
+  period: 2026年秋季学期
+  scope: 仅用于2026年秋季学期且限定《2026年秋季学期通识选修课程目录》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 2024-2027级学生
+  parent: whd_2dff6a44d5ae86fb0bef94f2eb3927b9
+- id: whd_3dbdc2128f5003bbd2755ad191c674b4
+  title: 【本科生院】关于2026年春季学期本科生选课安排的通知-武汉理工大学航运学院
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: ANNUAL_NOTICE
+  period: 2026年春季学期
+  scope: 仅用于2026年春季学期且限定《【本科生院】关于2026年春季学期本科生选课安排的通知-武汉理工大学航运学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 选课
+  pii_resolution:
+    decision: HISTORICAL_FALSE_POSITIVE
+    reviewed_entire_document: true
+    rationale: 历史状态位为1，但同源记录的扫描状态为CLEAR且分类为空；V4对完整正文使用当前规则重新扫描仍为CLEAR。本条保留单独解除记录，不放宽任何新PII命中。
+    needle: 选课
+- id: wha_93ce28cd78cb0c28c62fb999f627892c
+  title: 2025-2026学年在线通识选修课程清单
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: APPLICATION_MATERIAL
+  period: 2026年春季学期
+  scope: 仅用于2026年春季学期且限定《2025-2026学年在线通识选修课程清单》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 学年学期
+  parent: whd_3dbdc2128f5003bbd2755ad191c674b4
+- id: wha_f73e492f69ef92be12540df9ce630c3d
+  title: 通识选修课程目录（按培养方案版本分类）
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: APPLICATION_MATERIAL
+  period: 2026年春季学期
+  scope: 仅用于2026年春季学期且限定《通识选修课程目录（按培养方案版本分类）》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 2024-2027级学生
+  parent: whd_3dbdc2128f5003bbd2755ad191c674b4
+- id: whd_1d397f886b0265ff857fd5075ae11791
+  title: 【本科生院】关于智慧树网络课堂开课的通知-武汉理工大学航运学院
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: ANNUAL_NOTICE
+  period: 2025-2026学年第一学期
+  scope: 仅用于2025-2026学年第一学期且限定《【本科生院】关于智慧树网络课堂开课的通知-武汉理工大学航运学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 网络课堂
+- id: wha_2464509739b007ca16be177618b2099f
+  title: 2025-2026学年智慧树网络课程任务清单
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: APPLICATION_MATERIAL
+  period: 2025-2026学年第一学期
+  scope: 仅用于2025-2026学年第一学期且限定《2025-2026学年智慧树网络课程任务清单》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 任务号
+  parent: whd_1d397f886b0265ff857fd5075ae11791
+- id: whd_88a3d6b3592ba5656e8f761359322c80
+  title: 【本科生院】关于超星尔雅网络课堂开课的通知-武汉理工大学航运学院
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: ANNUAL_NOTICE
+  period: 2025-2026学年第一学期
+  scope: 仅用于2025-2026学年第一学期且限定《【本科生院】关于超星尔雅网络课堂开课的通知-武汉理工大学航运学院》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 网络课堂
+- id: wha_8fa7478ee314c4495850864c9e5f4d37
+  title: 2025-2026学年超星尔雅网络课程任务清单
+  topic: course_selection
+  education: UNDERGRADUATE
+  type: APPLICATION_MATERIAL
+  period: 2025-2026学年第一学期
+  scope: 仅用于2025-2026学年第一学期且限定《2025-2026学年超星尔雅网络课程任务清单》所载内容；不得推断其他专业、学院、学期或后续版本。
+  evidence_needles:
+  - needle: 任务号
+  parent: whd_88a3d6b3592ba5656e8f761359322c80

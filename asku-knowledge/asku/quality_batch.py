@@ -249,6 +249,12 @@ def review_reasons(d: dict, review: dict, text: str, taxonomy: dict) -> list[str
         reasons.append("explicit_answer_scope_required")
     if not review.get("scope_note"):
         reasons.append("scope_note_required")
+    if review.get("version_label") and (
+        not review.get("version_family")
+        or re.sub(r"\s+", "", str(review["version_label"]))
+        not in re.sub(r"\s+", "", text)
+    ):
+        reasons.append("version_label_not_in_source")
     proofs = review.get("evidence", [])
     if not proofs or any(
         len(p) < 12 or canonical_text(p) not in canonical_text(text) for p in proofs

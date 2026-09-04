@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -28,25 +29,91 @@ def quote(text: str, start: str, end: str) -> str:
     return canonical_text(text[first.start() : max(first.end(), last.end())])
 
 
+def load_plan(path: Path) -> dict:
+    plan = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not plan.get("extends"):
+        return plan
+    base = load_plan((path.parent / plan["extends"]).resolve())
+    dropped = set(plan.get("drop_context_documents", []))
+    return {
+        **base,
+        **{
+            key: value
+            for key, value in plan.items()
+            if key not in {"extends", "reviews"}
+        },
+        "reviews": [*base.get("reviews", []), *plan.get("reviews", [])],
+        "context_decisions": [
+            item
+            for item in base.get("context_decisions", [])
+            if item["document_id"] not in dropped
+        ],
+    }
+
+
+def evidence_window(text: str, needle: str, radius: int = 100) -> str:
+    compact = canonical_text(text)
+    match = re.search(
+        r"\s*".join(re.escape(c) for c in re.sub(r"\s+", "", needle)), compact
+    )
+    if match is None:
+        raise ValueError("evidence_needle_not_found:" + needle)
+    return compact[
+        max(0, match.start() - radius) : min(len(compact), match.end() + radius)
+    ]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--evidence-source", type=Path)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    plan = yaml.safe_load(args.plan.read_text(encoding="utf-8"))
+    plan = load_plan(args.plan)
     if sha((args.source / "catalog.sqlite").read_bytes()) != plan["input_sha256"]:
         raise ValueError("review_plan_source_changed")
     with read_db(args.source / "catalog.sqlite") as conn:
         docs = {d["id"]: dict(d) for d in conn.execute("SELECT * FROM documents")}
+    evidence_source = args.evidence_source or args.source
+    with read_db(evidence_source / "catalog.sqlite") as conn:
+        evidence_docs = {
+            d["id"]: dict(d) for d in conn.execute("SELECT * FROM documents")
+        }
     reviews = []
     cases = []
     for entry in plan["reviews"]:
         d = docs[entry["id"]]
-        text = file_text(d, args.source)
+        text = file_text(evidence_docs[d["id"]], evidence_source)
         proofs = []
-        for q, start, end, answer, token in entry["facts"]:
-            evidence = quote(text, start, end)
+        facts = entry.get("facts")
+        if facts is None:
+            facts = []
+            for item in entry.get("evidence_needles", []):
+                needle = item["needle"] if isinstance(item, dict) else str(item)
+                evidence = evidence_window(text, needle)
+                facts.append(
+                    (
+                        item.get(
+                            "question",
+                            f"《{entry.get('title') or d['title']}》的来源材料如何表述？",
+                        )
+                        if isinstance(item, dict)
+                        else f"《{entry.get('title') or d['title']}》的来源材料如何表述？",
+                        None,
+                        None,
+                        item.get("answer", evidence)
+                        if isinstance(item, dict)
+                        else evidence,
+                        needle,
+                    )
+                )
+        for q, start, end, answer, token in facts:
+            evidence = (
+                evidence_window(text, token)
+                if start is None
+                else quote(text, start, end)
+            )
             if re.sub(r"\s+", "", str(token)) not in re.sub(r"\s+", "", evidence):
                 raise ValueError("expected_token_not_in_evidence:" + q)
             proofs.append(evidence)
@@ -87,11 +154,17 @@ def main():
             review["parent_document_id"] = entry["parent"]
         if entry.get("title"):
             review["title"] = entry["title"]
+        for field in ("version_label", "version_family", "valid_from", "valid_to"):
+            if entry.get(field) is not None:
+                review[field] = entry[field]
         if entry.get("pii_resolution"):
             resolution = dict(entry["pii_resolution"])
-            resolution["evidence"] = quote(
-                text, resolution.pop("start"), resolution.pop("end")
-            )
+            if resolution.get("needle"):
+                resolution["evidence"] = evidence_window(text, resolution.pop("needle"))
+            else:
+                resolution["evidence"] = quote(
+                    text, resolution.pop("start"), resolution.pop("end")
+                )
             review["pii_resolution"] = resolution
         reviews.append(review)
     contexts = []
@@ -99,7 +172,7 @@ def main():
         context = dict(entry)
         evidence_doc = docs[context["evidence_document_id"]]
         context["evidence"] = quote(
-            file_text(evidence_doc, args.source),
+            file_text(evidence_docs[evidence_doc["id"]], evidence_source),
             context.pop("start"),
             context.pop("end"),
         )
@@ -113,7 +186,9 @@ def main():
             "version": 1,
             "school_id": plan["school_id"],
             "input_sha256": plan["input_sha256"],
-            "review_plan_sha256": sha(args.plan.read_bytes()),
+            "review_plan_sha256": sha(
+                json.dumps(plan, ensure_ascii=False, sort_keys=True).encode("utf-8")
+            ),
             "reviews": reviews,
             "context_decisions": contexts,
         },

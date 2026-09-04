@@ -4,6 +4,8 @@
 
 V4 准确性优先清洗与离线交付说明见 [知识数据质量验收](../docs/knowledge-quality-v4.md)。该批次仅提供限定适用范围的审核证据，尚未完成生产 RAG 和官网现行性验收。
 
+经过物理去噪并满足 WeKnora Canary 数据门槛的 V5 生产候选见 [V5 交付说明](../docs/knowledge-quality-v5.md)。
+
 ## 本地验证
 
 ```powershell

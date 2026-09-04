@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 from asku.admission import text_hash
 from asku.normalizer import normalize_html
+from asku.production_batch import noise_reason
 from asku.quality_batch import file_text, review_reasons, sha
 from asku.scoped_evidence import allowed_for_scope
 from asku.semantic_quality import normalize_artifact, suggest, title_from_evidence
@@ -31,6 +32,39 @@ class SemanticQualityTests(unittest.TestCase):
         self.assertEqual(result["content_role"], "NON_STUDENT")
         self.assertEqual(result["audience"], "TEACHER")
         self.assertNotEqual(result["topic"], "innovation_project")
+
+    def test_production_prune_is_fail_closed_but_preserves_reviewed_evidence(self):
+        base = {
+            "admission_status": "BLOCKED",
+            "semantic_status": "UNREVIEWED",
+            "parse_status": "PARSED",
+            "pii_scan_status": "CLEAR",
+            "content_chars": 500,
+            "normalized_path": "d.md",
+            "content_role": "PROCEDURE_GUIDE",
+            "parse_format": "html",
+            "secondary_topic": "course_selection",
+            "audience": "UNDERGRADUATE",
+            "education_level": "UNDERGRADUATE",
+            "publish_date": "2026-01-01",
+        }
+        self.assertIsNone(noise_reason(base))
+        self.assertEqual(
+            noise_reason({**base, "pii_scan_status": "HIT"}),
+            "INVALID_PARSE_PII_OR_TEXT",
+        )
+        self.assertEqual(
+            noise_reason({**base, "content_role": "NEWS"}), "NEWS_RESULT_OR_NON_STUDENT"
+        )
+        self.assertEqual(
+            noise_reason({**base, "audience": "UNKNOWN"}), "UNRESOLVED_SEMANTIC_SCOPE"
+        )
+        self.assertEqual(
+            noise_reason(
+                {**base, "pii_scan_status": "HIT", "admission_status": "READY"}
+            ),
+            "INVALID_PARSE_PII_OR_TEXT",
+        )
 
     def test_recommendation_beats_incidental_degree_word(self):
         result = self.suggest(

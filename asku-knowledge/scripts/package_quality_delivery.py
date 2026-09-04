@@ -35,6 +35,10 @@ def package(batch: Path, report: Path, output: Path) -> dict:
             batch / name: digest for name, digest in validation["export_sha256"].items()
         },
     }
+    if validation.get("deletion_manifest_sha256"):
+        expected[batch / "deletion-manifest.jsonl"] = validation[
+            "deletion_manifest_sha256"
+        ]
     for path, digest in expected.items():
         if sha(path.read_bytes()) != digest:
             raise ValueError("verified_artifact_changed:" + path.name)
@@ -50,10 +54,24 @@ def package(batch: Path, report: Path, output: Path) -> dict:
         "context_decisions.jsonl",
     ):
         entries[name] = (batch / name).read_bytes()
+    if (batch / "deletion-manifest.jsonl").is_file():
+        entries["deletion-manifest.jsonl"] = (
+            batch / "deletion-manifest.jsonl"
+        ).read_bytes()
     for name in ("acceptance.json", "evidence-cases.json"):
         entries[name] = (report / name).read_bytes()
+    if (report / "weknora-readiness.json").is_file():
+        entries["weknora-readiness.json"] = (
+            report / "weknora-readiness.json"
+        ).read_bytes()
     root = Path(__file__).resolve().parents[2]
-    entries["README.md"] = (root / "docs/knowledge-quality-v4.md").read_bytes()
+    readme_name = (
+        "knowledge-quality-v5.md"
+        if validation.get("documents_deleted") is not None
+        else "knowledge-quality-v4.md"
+    )
+    readme = root / "docs" / readme_name
+    entries["README.md"] = readme.read_bytes()
     entries["scope_gate.py"] = (
         root / "asku-knowledge/asku/scoped_evidence.py"
     ).read_bytes()
