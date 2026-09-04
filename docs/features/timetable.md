@@ -1,5 +1,7 @@
 # AskU 课表 V1 开发报告
 
+> 本文保留 2026-09-03 的历史实现与验收记录。2026-09-04 基于最新 main 的差异矩阵、定向修补及本轮验证状态见 [iwut Feature Parity Audit](./timetable-iwut-parity-audit.md)。历史验证结果不代表本轮真实账号已验收；当前 Provider 路径为 `providers/jwapp/`。
+
 实现日期：2026-09-03。范围：武汉理工本科课表导入与 AskU 自有课表界面。未修改 AI 对话业务、知识库、RAG 或后端数据库。
 
 ## 功能

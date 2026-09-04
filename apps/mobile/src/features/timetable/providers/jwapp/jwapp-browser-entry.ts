@@ -16,16 +16,35 @@ export async function runSchoolImport(requestId: string) {
   const post = (message: object) => scope.ReactNativeWebView.postMessage(JSON.stringify({
     channel: 'asku.timetable', version: 1, requestId, ...message,
   }));
+  const normalize = createJwappNormalizer();
   const request = async (path: string, init: RequestInit, json = true) => {
     const response = await fetch(path, { ...init, credentials: 'include', signal: controller.signal });
     if (response.status === 401 || response.status === 403) throw new Error('AUTH');
     if (!response.ok) throw new Error('SYSTEM');
-    if (response.redirected && new URL(response.url).pathname.includes('/tpass/')) throw new Error('AUTH');
-    if (!json) return null;
-    try { return await response.json(); } catch { throw new Error('FORMAT'); }
+    if (response.url) {
+      const target = new URL(response.url);
+      const login = new URL(schoolAdapter.timetable.login_url);
+      if (target.origin !== schoolAdapter.timetable.origin || target.pathname.startsWith('/tpass/') ||
+          (target.origin === login.origin && target.pathname === login.pathname)) throw new Error('AUTH');
+    }
+    const text = await response.text();
+    // changeAppRole may return an empty body; data endpoints must return JSON.
+    if (!json) {
+      const trimmed = text.trim();
+      if (!trimmed) return null;
+      // This endpoint's success body is not consumed by the school client.
+      // Preserve plain acknowledgements; inspect JSON errors and reject HTML.
+      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+        if (trimmed.startsWith('<')) throw new Error('FORMAT');
+        return null;
+      }
+    }
+    let body: unknown;
+    try { body = JSON.parse(text); } catch { throw new Error('FORMAT'); }
+    normalize.assertSuccess(body);
+    return body;
   };
   try {
-    const normalize = createJwappNormalizer();
     await request(schoolAdapter.timetable.role_path, {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     }, false);

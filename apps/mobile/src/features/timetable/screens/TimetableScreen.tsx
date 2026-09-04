@@ -104,6 +104,7 @@ export function TimetableScreen() {
               <View style={styles.toolbar}>
                 <View style={styles.meta}>
                   <Text numberOfLines={1} style={styles.source}>{getProviderLabel(timetable.provider)}</Text>
+                  <Text style={styles.term}>学期 {timetable.termCode}</Text>
                   <Text style={styles.updated}>最后更新：{formatLastImported(timetable.lastImportedAt, timetable.timezone, now)}</Text>
                 </View>
                 <Pressable accessibilityRole="button" accessibilityLabel="重新导入课表" disabled={busy || !schoolAdapter.timetable.enabled} onPress={() => void importCourses(providers.primary)} style={styles.refresh}>
@@ -117,7 +118,7 @@ export function TimetableScreen() {
               <WeekNavigator week={week} currentWeek={currentWeek} maxWeek={maxWeek} dates={getWeekDates(timetable.termStartDate, week)} onChange={setSelectedWeek} onToday={() => setSelectedWeek(null)} />
               <WeekHeader dates={getWeekDates(timetable.termStartDate, week)} today={getSchoolDate(now, timetable.timezone)} />
               <TimetableGrid courses={timetable.courses.filter((course) => belongsToWeek(course, week))} onCoursePress={setSelectedCourse} onSwipe={swipe} />
-              <Text style={styles.footer}>{timetable.termCode} · 按学校时区显示 · 左右滑动切换周次</Text>
+              <Text style={styles.footer}>按学校时区显示 · 左右滑动切换周次</Text>
             </>
           )}
         </>
@@ -150,6 +151,7 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: 'row', alignItems: 'center', paddingLeft: 20, paddingRight: 8, paddingVertical: 8, gap: 4 },
   meta: { flex: 1 },
   source: { fontSize: 12, color: colors.textSecondary },
+  term: { fontSize: 12, color: colors.textPrimary, marginTop: 6 },
   updated: { fontSize: 10, color: colors.textMuted, marginTop: 6 },
   refresh: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 6 },
   refreshText: { fontSize: 12, color: colors.accent },

@@ -15,7 +15,7 @@ export function WeekNavigator({ week, currentWeek, maxWeek, dates, onChange, onT
       <Pressable accessibilityRole="button" accessibilityLabel={`第 ${week} 周，点击返回当前周`} onPress={onToday} style={styles.center}>
         <Text style={[styles.week, week === currentWeek && styles.active]}>第 {week} 周</Text>
         <Text style={styles.dates}>{formatDateRange(dates)}</Text>
-        <Text style={styles.hint}>{currentWeek < 1 ? '尚未开学' : currentWeek > maxWeek ? '本学期已结束' : week === currentWeek ? '本周' : '点击回到本周'}</Text>
+        <Text style={styles.hint}>{currentWeek < 1 ? '尚未开学' : currentWeek > maxWeek ? `当前为第 ${currentWeek} 周，超出课表浏览范围` : week === currentWeek ? '本周' : '点击回到本周'}</Text>
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="下一周" disabled={week >= maxWeek} onPress={() => onChange(week + 1)} style={styles.arrow}>
         <Ionicons name="chevron-forward" size={22} color={week >= maxWeek ? colors.border : colors.textSecondary} />

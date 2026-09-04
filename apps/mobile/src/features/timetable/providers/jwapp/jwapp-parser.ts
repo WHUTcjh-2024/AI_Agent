@@ -6,10 +6,18 @@ export function createJwappNormalizer() {
     value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
   const fail = (): never => { throw new Error('FORMAT'); };
   const integer = (value: unknown): number => {
+    if (typeof value === 'string') value = value.trim();
     if (typeof value !== 'number' && !(typeof value === 'string' && /^\d+$/.test(value))) return NaN;
     return Number(value);
   };
-  const cleanText = (value: unknown) => typeof value === 'string' ? value.trim().slice(0, 200) : '';
+  const cleanText = (value: unknown) => typeof value === 'string' ? value.trim() : '';
+  // Explicit failure envelopes must never be mistaken for a valid empty result.
+  // Do not infer success from undocumented code values or forward school messages.
+  function assertSuccess(value: unknown) {
+    const response = record(value);
+    if (response.code === 401 || response.code === '401' || response.code === 403 || response.code === '403') throw new Error('AUTH');
+    if (response.success === false) throw new Error('SYSTEM');
+  }
   function parseWeekBitmap(value: string): number[] {
     if (typeof value !== 'string' || value.length > 64) return fail();
     const weeks: number[] = [];
@@ -20,6 +28,7 @@ export function createJwappNormalizer() {
     return weeks;
   }
   function currentUser(value: unknown) {
+    assertSuccess(value);
     const data = record(record(value).datas);
     const studentId = data.userId;
     const termCode = record(data.welcomeInfo).xnxqdm;
@@ -28,6 +37,8 @@ export function createJwappNormalizer() {
     return { studentId, termCode };
   }
   function normalize(courseResponse: unknown, calendarResponse: unknown, termCode: string) {
+    assertSuccess(courseResponse);
+    assertSuccess(calendarResponse);
     if (!/^\d{4}-\d{4}-[1-3]$/.test(termCode)) return fail();
     const rows = record(record(record(courseResponse).datas).cxxskcb).rows;
     const calendar = record(record(record(calendarResponse).datas).cxxljc).rows;
@@ -49,7 +60,7 @@ export function createJwappNormalizer() {
       const weekday = integer(row.SKXQ);
       const startSection = integer(row.KSJC);
       const endSection = integer(row.JSJC);
-      if (!name || !weeks.length || !Number.isInteger(weekday) || weekday < 1 || weekday > 7 ||
+      if (!name || [name, teacher, room].some((text) => text.length > 200) || !weeks.length || !Number.isInteger(weekday) || weekday < 1 || weekday > 7 ||
           !Number.isInteger(startSection) || !Number.isInteger(endSection) || startSection < 1 || endSection > 16 || endSection < startSection) {
         skippedRows++; continue;
       }
@@ -63,7 +74,7 @@ export function createJwappNormalizer() {
     return { version: 1 as const, schoolId: schoolAdapter.schoolId, provider: schoolAdapter.timetable.provider_id, termCode, termStartDate,
       timezone: schoolAdapter.timetable.timezone, lastImportedAt: new Date().toISOString(), courses, skippedRows };
   }
-  return { parseWeekBitmap, currentUser, normalize };
+  return { parseWeekBitmap, currentUser, normalize, assertSuccess };
 }
 
 export const { parseWeekBitmap, currentUser: parseJwappCurrentUser, normalize: normalizeJwappCourses } = createJwappNormalizer();

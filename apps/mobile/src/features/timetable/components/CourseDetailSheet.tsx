@@ -9,7 +9,7 @@ export function CourseDetailSheet({ course, sourceLabel, onClose }: { course: Co
   const insets = useSafeAreaInsets();
   if (!course) return null;
   const rows = [
-    ['教师', course.teacher || '暂未提供'], ['地点', course.room || '暂未提供'],
+    ['教师', course.teacher || '暂未提供'], ['地点', course.room || '地点待定'],
     ['时间', `周${WEEKDAYS[course.weekday - 1]} 第${course.startSection}–${course.endSection}节`],
     ['周次', formatWeeks(course.weeks)], ['来源', sourceLabel],
   ];

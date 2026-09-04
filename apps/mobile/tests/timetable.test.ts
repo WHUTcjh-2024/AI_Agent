@@ -160,3 +160,64 @@ test('corrupt storage fails safely, failed refresh retains old disk data', async
   assert.equal((await repository.load())?.courses[0].name, '大学物理');
   value = '{broken'; await assert.rejects(repository.load());
 });
+
+test('required real-world arrangements preserve every exact teaching week', () => {
+  const cases = [
+    { SKZC: '1'.repeat(16), weeks: Array.from({ length: 16 }, (_, i) => i + 1) },
+    { SKZC: '10'.repeat(8), weeks: [1, 3, 5, 7, 9, 11, 13, 15] },
+    { SKZC: '01'.repeat(8), weeks: [2, 4, 6, 8, 10, 12, 14, 16] },
+    { SKZC: '11001001001', weeks: [1, 2, 5, 8, 11] },
+  ];
+  for (const example of cases) {
+    const result = normalize([{ ...row, SKZC: example.SKZC }]).courses[0];
+    assert.deepEqual(result.weeks, example.weeks);
+    assert.equal(result.name, '大学物理');
+    assert.deepEqual([result.weekday, result.startSection, result.endSection], [3, 3, 5]);
+  }
+});
+
+test('only exact duplicates are removed; teacher, room and week differences survive', () => {
+  const result = normalize([row, { ...row }, { ...row, SKJS: '李老师' }, { ...row, JASMC: '另一教室' }, { ...row, SKZC: '010101' }]);
+  assert.equal(result.courses.length, 4);
+  assert.equal(result.skippedRows, 0);
+  assert.equal(new Set(result.courses.map(({ id }) => id)).size, 4);
+});
+
+test('numeric field whitespace accepted without accepting coercion traps', () => {
+  assert.equal(normalize([{ ...row, SKXQ: ' 3 ', KSJC: '\t3', JSJC: '5\n' }]).courses[0].weekday, 3);
+  for (const value of ['', ' ', '3.5', '3e0', '0x3', true, null, Infinity, {}, []]) {
+    assert.throws(() => normalize([{ ...row, SKXQ: value }]));
+  }
+});
+
+test('overlong text is skipped explicitly instead of truncating distinct records into duplicates', () => {
+  const prefix = '课'.repeat(200);
+  const result = normalize([row, { ...row, KCM: prefix + '甲' }, { ...row, KCM: prefix + '乙' }, { ...row, SKJS: prefix + '甲' }, { ...row, JASMC: prefix + '乙' }]);
+  assert.equal(result.courses.length, 1);
+  assert.equal(result.skippedRows, 4);
+  assert.throws(() => normalize([{ ...row, KCM: prefix + '甲' }]));
+});
+
+test('3–5 and 4–6 conflict arrangements remain separate lanes', () => {
+  const result = layoutDay(normalize([row, { ...row, KCM: '另一门课', KSJC: 4, JSJC: 6 }]).courses);
+  assert.equal(result.length, 2);
+  assert.deepEqual(result.map(({ lane, laneCount }) => [lane, laneCount]), [[0, 2], [1, 2]]);
+});
+
+test('save rejects an otherwise valid snapshot larger than the reload limit before any write', async () => {
+  const old = normalize([row]);
+  let value = JSON.stringify(old);
+  let writes = 0;
+  const repository = new TimetableRepository({ getItem: async () => value,
+    setItem: async (_, next) => { writes++; value = next; }, removeItem: async () => {} });
+  const source = { schoolId: 's'.repeat(80), provider: 'p'.repeat(80) };
+  const large = { ...old, ...source, courses: Array.from({ length: 2000 }, (_, i) => ({ ...course(),
+    id: String(i).padStart(200, '0'), name: '名'.repeat(200), teacher: '师'.repeat(200), room: '室'.repeat(200), source,
+    weeks: Array.from({ length: 64 }, (_, week) => week + 1),
+  })) };
+  assert.ok(timetableSchema.safeParse(large).success);
+  assert.ok(JSON.stringify(large).length > 2_000_000);
+  await assert.rejects(repository.save(large), /size limit/);
+  assert.equal(writes, 0);
+  assert.deepEqual(await repository.load(), old);
+});

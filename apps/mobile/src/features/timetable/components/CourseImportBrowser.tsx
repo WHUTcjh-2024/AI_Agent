@@ -149,7 +149,7 @@ function CourseImportBrowser({ request, onFinish }: { request: BrowserImportRequ
               onError={() => fail('NETWORK')}
               onHttpError={({ nativeEvent }) => {
                 // Ignore a failed subresource; don't turn a missing favicon into a failed login.
-                if (nativeEvent.url === currentUrl.current) fail('SYSTEM');
+                if (nativeEvent.url === currentUrl.current) fail(nativeEvent.statusCode === 401 || nativeEvent.statusCode === 403 ? 'AUTH' : 'SYSTEM');
               }}
               onContentProcessDidTerminate={() => fail('SYSTEM')}
               onRenderProcessGone={() => fail('SYSTEM')}

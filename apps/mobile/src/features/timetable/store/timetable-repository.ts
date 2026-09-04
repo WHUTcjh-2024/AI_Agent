@@ -8,6 +8,7 @@ export interface TimetableStorage {
 }
 
 export const TIMETABLE_STORAGE_KEY = `@asku/timetable/v1/${schoolAdapter.schoolId}`;
+const MAX_CACHE_LENGTH = 2_000_000;
 
 export class TimetableRepository {
   constructor(private readonly storage: TimetableStorage) {}
@@ -15,13 +16,15 @@ export class TimetableRepository {
   async load(): Promise<Timetable | null> {
     const raw = await this.storage.getItem(TIMETABLE_STORAGE_KEY);
     if (raw === null) return null;
-    if (raw.length > 2_000_000) throw new Error('Invalid timetable cache');
+    if (raw.length > MAX_CACHE_LENGTH) throw new Error('Invalid timetable cache');
     return timetableSchema.parse(JSON.parse(raw));
   }
 
   async save(value: Timetable): Promise<Timetable> {
     const safe = timetableSchema.parse(value);
-    await this.storage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(safe));
+    const serialized = JSON.stringify(safe);
+    if (serialized.length > MAX_CACHE_LENGTH) throw new Error('Timetable cache exceeds size limit');
+    await this.storage.setItem(TIMETABLE_STORAGE_KEY, serialized);
     return safe;
   }
 
