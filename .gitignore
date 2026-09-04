@@ -41,6 +41,7 @@ asku-knowledge/reports/
 
 # Local QA captures and temporary files.
 tmp/
+.playwright-mcp/
 apps/mobile/artifacts/
 apps/mobile/.git-backup-local/
 _knowledge_schema_*.sql

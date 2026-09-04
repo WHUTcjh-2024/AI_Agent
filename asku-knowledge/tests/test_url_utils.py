@@ -16,7 +16,7 @@ class CanonicalizeTests(unittest.TestCase):
         self.assertEqual(canonicalize("https://Example.com:80/a"), "https://example.com:80/a")
 
     def test_url_gate_rejects_userinfo_before_network_resolution(self) -> None:
-        config = load_config()
+        config = load_config(school_config=Path(__file__).resolve().parents[2] / "config/schools/whut.yaml")
         gate = UrlGate(config.school, config.sources)
 
         decision = gate.check("https://user:secret@jwc.whut.edu.cn/notice")
@@ -25,7 +25,7 @@ class CanonicalizeTests(unittest.TestCase):
         self.assertEqual(decision.reason, "userinfo_not_allowed")
 
     def test_knowledge_domains_cover_backend_domains(self) -> None:
-        config = load_config()
+        config = load_config(school_config=Path(__file__).resolve().parents[2] / "config/schools/whut.yaml")
         repository_root = Path(__file__).resolve().parents[2]
         backend_config = yaml.safe_load(
             (repository_root / "config" / "schools" / "whut.yaml").read_text(encoding="utf-8")
@@ -35,7 +35,7 @@ class CanonicalizeTests(unittest.TestCase):
         self.assertTrue(config.taxonomy.is_valid_secondary_topic("other"))
 
     def test_inactive_registered_source_is_not_crawled(self) -> None:
-        config = load_config()
+        config = load_config(school_config=Path(__file__).resolve().parents[2] / "config/schools/whut.yaml")
         gate = UrlGate(config.school, config.sources)
 
         with patch("asku.url_utils._is_private_address", return_value=False):

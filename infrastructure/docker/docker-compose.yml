@@ -33,7 +33,7 @@ services:
       ASKU_HTTP_ADDR: ":18080"
       ASKU_DATABASE_URL: "postgres://asku:asku_dev@postgres:5432/asku?sslmode=disable"
       ASKU_REDIS_ADDR: "redis:6379"
-      ASKU_SCHOOL_CONFIG: "/config/schools/whut.yaml"
+      ASKU_SCHOOL_CONFIG: "${ASKU_SCHOOL_CONFIG:-/config/schools/whut.yaml}"
       ASKU_DEV_AUTH_ENABLED: "true"
       ASKU_AGENT_MODE: "${ASKU_AGENT_MODE:-policy}"
       ASKU_LLM_PROVIDER: "${ASKU_LLM_PROVIDER:-mock}"

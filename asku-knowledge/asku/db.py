@@ -308,7 +308,7 @@ class UrlRepository:
 
     # ---- 认领（§35） ----
 
-    def claim_batch(self, limit: int = 20, *, school_id: str = "whut") -> List[UrlRecord]:
+    def claim_batch(self, limit: int = 20, *, school_id: str) -> List[UrlRecord]:
         """使用 FOR UPDATE SKIP LOCKED 认领一批 URL，保证多 Agent 不重复。
 
         同时回收租约过期（agent 崩溃）的 CLAIMED 记录，实现 Crash Recovery。
@@ -428,7 +428,7 @@ class UrlRepository:
 
     # ---- 统计 ----
 
-    def counts_by_status(self, school_id: str = "whut") -> Dict[str, int]:
+    def counts_by_status(self, school_id: str) -> Dict[str, int]:
         rows = self.db.fetchall(
             """
             SELECT status, count(*) AS total
@@ -440,7 +440,7 @@ class UrlRepository:
         )
         return {row["status"]: row["total"] for row in rows}
 
-    def processed_count(self, school_id: str = "whut") -> int:
+    def processed_count(self, school_id: str) -> int:
         row = self.db.fetchone(
             """
             SELECT count(*) AS total FROM crawler.urls

@@ -9,6 +9,7 @@ import { HistoryScreen } from '../../screens/History/HistoryScreen';
 import { HomeScreen } from '../../screens/Home/HomeScreen';
 import { ProfileScreen } from '../../screens/Profile/ProfileScreen';
 import { SourceDetailScreen } from '../../screens/Source/SourceDetailScreen';
+import { TimetableScreen } from '../../features/timetable/screens/TimetableScreen';
 import { colors, typography } from '../../theme';
 import type { MainTabParamList, RootStackParamList } from '../../types/navigation';
 
@@ -61,6 +62,7 @@ export function RootNavigator() {
         <Stack.Screen component={MainTabs} name="MainTabs" options={{ headerShown: false }} />
         <Stack.Screen component={ChatScreen} name="Chat" options={{ title: 'AskU' }} />
         <Stack.Screen component={SourceDetailScreen} name="SourceDetail" options={{ title: '来源详情' }} />
+        <Stack.Screen component={TimetableScreen} name="Timetable" options={{ title: '课表' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

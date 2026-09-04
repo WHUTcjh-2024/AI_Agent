@@ -1,0 +1,458 @@
+version: 1
+now: '2026-09-04T12:00:00+08:00'
+cases:
+- question: 你好
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 你好呀
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 您好！
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: hello
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: hi
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 在吗？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 嗨
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 哈喽
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: pure_social
+- question: 你是谁？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: 你能做什么？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: 介绍一下 AskU
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: AskU 是什么？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: AskU 能干什么？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: 介绍一下你自己
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: 你好，你是谁？
+  expected_route: controlled
+  expected_retrieval: []
+  expected_reason: product_introduction
+- question: 你好，请问奖学金怎么评？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 您好，我想问一下转专业需要什么条件？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: hello，请问图书馆在哪里？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 麻烦问一下，四六级是什么？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 您好，我想知道奖学金怎么评。
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 奖学金怎么评？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 图书馆在哪里？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 四六级是什么？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 四六级一般怎么报名？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 介绍一下奖学金
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: helloWorld
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: history
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 请问
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: stable_campus_knowledge
+- question: 你好，请问四六级什么时候报名？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: hello，图书馆几点关门？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 你是谁不重要，我要查转专业时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 你好！请问四六级什么时候报名？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 你好,请问四六级什么时候报名
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 你好  请问  四六级什么时候报名
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 图书馆几点关门？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 报名截止时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 申请什么时候结束
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_schedule_question
+- question: 明年开学时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 您好，今年转专业什么时候开始？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: hello，图书馆今天几点关门？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 你好像知道今年什么时候报名
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: HELLO，请问今年什么时候放假？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 你好，请问今年奖学金怎么评？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 你是谁不重要，帮我查一下今年转专业时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 今年奖学金怎么评？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 现在图书馆开门吗？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 今年四六级什么时候报名？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 本年度奖学金怎么评
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 本学年考试安排
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 本学期选课
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 这学期选课
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 下学期选课
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 本轮申请
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 这次考试
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 近期政策
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 目前的政策
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 最新政策
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_marker
+- question: 嗨，现在还能选课吗？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 2024 年这个转专业政策现在还有效吗？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 2024 年的规定现在还有效吗？
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 报名开始了吗
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 申请结束了吗
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 图书馆开放了吗
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 是否已经开放
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 有没有开始选课
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 2024 年规定是否有效
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_status_question
+- question: 你好不好用不重要，帮我查一下校历
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 校历
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 四六级报名
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 考试安排
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 选课安排
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 图书馆开放
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_dynamic_information
+- question: 2024 年转专业条件是什么？
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: historical_explicit_year
+- question: 2024 年转专业政策
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: historical_explicit_year
+- question: 2024-2025 学年校历
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: historical_explicit_year
+- question: 2024 年考试时间
+  expected_route: knowledge
+  expected_retrieval:
+  - knowledge
+  expected_reason: historical_explicit_year
+- question: 2026 年四六级报名时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 2026-2027 学年校历
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 2027 年什么时候开学
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 2026 年转专业时间
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 2025-2026 学年校历
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 2024 年与 2027 年政策区别
+  expected_route: hybrid
+  expected_retrieval:
+  - knowledge
+  - web
+  expected_reason: freshness_current_year
+- question: 官网搜索测试
+  expected_route: web_search
+  expected_retrieval:
+  - web
+  expected_reason: integration_probe
+- question: web-search
+  expected_route: web_search
+  expected_retrieval:
+  - web
+  expected_reason: integration_probe

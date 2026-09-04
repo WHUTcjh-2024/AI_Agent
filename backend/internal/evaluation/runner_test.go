@@ -34,6 +34,7 @@ func TestSkip(t *testing.T) { t.Skip("deliberate skip") }
 func TestSubSkip(t *testing.T) { t.Run("pending", func(t *testing.T) { t.Skip("not verified") }) }
 `)
 	write("evals/fixtures/school.yaml", "school_id: eval\nschool_name: Fixture\nallowed_domains: [university.example]\nknowledge_version: fixture-v1\n")
+	write("evals/routing.yaml", "version: 1\ncases: []\n")
 	write("evals/golden-questions.yaml", "version: 1\nschool_id: eval\ndimensions:\n  correctness: human review\nquestions:\n  - id: pending\n    question: unverified campus fact\n    must_have_citation: true\n")
 	git := func(args ...string) {
 		t.Helper()

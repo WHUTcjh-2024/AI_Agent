@@ -84,7 +84,7 @@ func (g *Gateway) Gather(ctx context.Context, request Request) (Response, error)
 			response.Stats.PagesFetched++
 		}
 
-		sections, extractHit, extractErr := g.sections(ctx, query, page)
+		sections, extractHit, extractErr := g.sections(ctx, scope.SchoolID, query, page)
 		if extractErr != nil {
 			response.Stats.PagesFailed++
 			slog.Warn("skip web search extraction", "url", result.URL, "error", extractErr)
@@ -129,10 +129,13 @@ func (g *Gateway) cachedSearch(ctx context.Context, scope Scope, query string) (
 }
 
 func (g *Gateway) page(ctx context.Context, rawURL string, scope Scope) (Page, bool, error) {
-	key := pageCacheKey(rawURL)
+	key := pageCacheKey(scope.SchoolID, rawURL)
 	if g.cache != nil {
 		var page Page
 		if hit, err := g.cache.GetJSON(ctx, key, &page); err == nil && hit {
+			if !IsAllowedURL(page.URL, scope.AllowedDomains) {
+				return Page{}, false, ErrDisallowedURL
+			}
 			return page, true, nil
 		} else if err != nil {
 			slog.Warn("read web search cache", "kind", "page", "error", err)
@@ -142,12 +145,15 @@ func (g *Gateway) page(ctx context.Context, rawURL string, scope Scope) (Page, b
 	if err != nil {
 		return Page{}, false, err
 	}
+	if !IsAllowedURL(page.URL, scope.AllowedDomains) {
+		return Page{}, false, ErrDisallowedURL
+	}
 	g.storeCache(ctx, key, page, g.policy.PageTTL)
 	return page, false, nil
 }
 
-func (g *Gateway) sections(ctx context.Context, query string, page Page) ([]Section, bool, error) {
-	key := extractCacheKey(query, page.URL)
+func (g *Gateway) sections(ctx context.Context, schoolID, query string, page Page) ([]Section, bool, error) {
+	key := extractCacheKey(schoolID, query, page.URL)
 	if g.cache != nil {
 		var sections []Section
 		if hit, err := g.cache.GetJSON(ctx, key, &sections); err == nil && hit {
@@ -193,9 +199,9 @@ func filterAllowedResults(results []SearchResult, domains []string) []SearchResu
 func searchCacheKey(schoolID, query string) string {
 	return "search:" + schoolID + ":" + digest(strings.ToLower(strings.TrimSpace(query)))
 }
-func pageCacheKey(rawURL string) string { return "page:" + digest(rawURL) }
-func extractCacheKey(query, rawURL string) string {
-	return "extract:" + digest(strings.ToLower(strings.TrimSpace(query))+"\x00"+rawURL)
+func pageCacheKey(schoolID, rawURL string) string { return "page:" + digest(schoolID+"\x00"+rawURL) }
+func extractCacheKey(schoolID, query, rawURL string) string {
+	return "extract:" + digest(schoolID+"\x00"+strings.ToLower(strings.TrimSpace(query))+"\x00"+rawURL)
 }
 func sourceID(schoolID, rawURL string) string {
 	return "src_web_" + digest(strings.TrimSpace(schoolID) + "\x00" + strings.TrimSpace(rawURL))[:24]

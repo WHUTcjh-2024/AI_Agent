@@ -54,7 +54,7 @@ func Load() (Config, error) {
 		DatabaseURL:            env("ASKU_DATABASE_URL", "postgres://asku:asku_dev@localhost:55432/asku?sslmode=disable"),
 		RedisAddr:              env("ASKU_REDIS_ADDR", "localhost:6385"),
 		RedisPassword:          os.Getenv("ASKU_REDIS_PASSWORD"),
-		SchoolConfig:           env("ASKU_SCHOOL_CONFIG", "../config/schools/whut.yaml"),
+		SchoolConfig:           strings.TrimSpace(os.Getenv("ASKU_SCHOOL_CONFIG")),
 		DevAuthEnabled:         false,
 		AgentMode:              env("ASKU_AGENT_MODE", "policy"),
 		LLMProvider:            env("ASKU_LLM_PROVIDER", "mock"),

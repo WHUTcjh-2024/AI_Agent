@@ -170,3 +170,28 @@ cases:
     package: ./internal/integration
     test: TestInterruptedRunRecovery
     description: 进程中断运行恢复为唯一可重放失败终态
+  - id: routing-regression
+    suite: offline
+    package: ./internal/agent
+    test: TestRoutingRegressionEvaluation
+    description: 固定时钟检查真实语言 route、reason 和检索能力
+  - id: school-portability
+    suite: offline
+    package: ./internal/school
+    test: TestSingleSchoolPortability
+    description: 同一 Gateway 和缓存使用 testu 配置并拒绝其他学校证据
+  - id: effective-query
+    suite: offline
+    package: ./internal/agent
+    test: TestEffectiveRetrievalPreservesOriginalGenerationAndSchoolScope
+    description: 检索使用清洗问题且生成保留原文和学校范围
+  - id: natural-language-cache-policy
+    suite: offline
+    package: ./internal/agent
+    test: TestFreshLanguageNeverReadsStableAnswerCache
+    description: 礼貌词、现状和年份问题不得读取稳定答案缓存
+  - id: all-web-cache-scopes
+    suite: offline
+    package: ./internal/websearch
+    test: TestAllWebCacheLayersAreSchoolScoped
+    description: 搜索、页面、摘录缓存均按学校隔离

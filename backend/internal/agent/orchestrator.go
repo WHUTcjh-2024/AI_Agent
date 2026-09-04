@@ -118,7 +118,7 @@ func (o *Orchestrator) Execute(ctx context.Context, request ExecutionRequest, pr
 	// Fresh and hybrid questions must never be answered from the stable-answer
 	// cache. Routing is intentionally resolved before cache lookup.
 	if plan.Route == RouteKnowledge {
-		if result, hit, cacheErr := o.lookupCachedAnswer(ctx, request, progress); cacheErr != nil {
+		if result, hit, cacheErr := o.lookupCachedAnswer(ctx, request, plan, progress); cacheErr != nil {
 			return ExecutionResult{}, cacheErr
 		} else if hit {
 			return result, nil
@@ -147,6 +147,14 @@ func (o *Orchestrator) Execute(ctx context.Context, request ExecutionRequest, pr
 		metadata = outcome.Metadata
 		applyRetrievalOutcome(&plan, request.Question, outcome)
 	}
+	metadata["routeReason"] = plan.Reason
+	metadata["cacheHit"] = false
+	if _, exists := metadata["degradedCapabilities"]; !exists {
+		metadata["degradedCapabilities"] = []string{}
+	}
+	slog.Info("agent route", "run_id", request.RunID, "school_id", request.SchoolID,
+		"route", plan.Route, "route_reason", plan.Reason, "retrieval_mode", retrievalEngine,
+		"degraded_capabilities", metadata["degradedCapabilities"], "cache_hit", false)
 	if plan.Sources == nil {
 		plan.Sources = []domain.Source{}
 	}
@@ -208,7 +216,7 @@ func (o *Orchestrator) Execute(ctx context.Context, request ExecutionRequest, pr
 	return result, nil
 }
 
-func (o *Orchestrator) lookupCachedAnswer(ctx context.Context, request ExecutionRequest, progress Progress) (ExecutionResult, bool, error) {
+func (o *Orchestrator) lookupCachedAnswer(ctx context.Context, request ExecutionRequest, plan Plan, progress Progress) (ExecutionResult, bool, error) {
 	if o.answerCache == nil {
 		return ExecutionResult{}, false, nil
 	}
@@ -223,7 +231,9 @@ func (o *Orchestrator) lookupCachedAnswer(ctx context.Context, request Execution
 	if cached.Sources == nil {
 		cached.Sources = []domain.Source{}
 	}
-	metadata := map[string]any{"cacheHit": true}
+	metadata := map[string]any{"cacheHit": true, "routeReason": plan.Reason, "retrievalMode": "answer-cache", "degradedCapabilities": []string{}}
+	slog.Info("agent route", "run_id", request.RunID, "school_id", request.SchoolID,
+		"route", plan.Route, "route_reason", plan.Reason, "retrieval_mode", "answer-cache", "cache_hit", true)
 	steps := []func() error{
 		func() error { return progress.RouteResolved(ctx, "cache", "verified_answer_cache_hit") },
 		func() error { return progress.RetrievalStarted(ctx, "answer-cache") },

@@ -50,3 +50,21 @@ fetcher = Fetcher(
 ```
 
 响应正文按流式大小上限读取；无 `Content-Length` 时仍会在预算处停止。
+
+## 学校配置（V0.11）
+
+唯一学校配置在仓库根目录 `config/schools/{school_id}.yaml`；来源表在
+`asku-knowledge/config/sources/{school_id}.yaml`。原有本目录 `config/schools/whut.yaml`
+和通用 `config/sources.yaml` 已移除，不做隐式回退。
+
+从本目录运行时设置：
+
+```powershell
+$env:ASKU_SCHOOL_CONFIG = (Resolve-Path ../config/schools/whut.yaml).Path
+```
+
+`load_config()` 使用该路径；也可显式传入 `school_config=Path(...)`，或传入
+`school_id` 与 `schools_dir`。环境中的路径与显式 school_id 不一致会直接失败。
+Loader 在抓取前校验学校 ID、active 来源与种子域名、禁止域、知识版本。
+`pipeline.yaml` 的 `weknora.enabled: true` 必须搭配学校官方知识库 ID。
+数据库统计和批量领取方法必须显式传入 school_id。

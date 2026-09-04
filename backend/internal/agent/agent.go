@@ -87,12 +87,7 @@ func (m *MockRouter) Plan(ctx context.Context, request Request) (Plan, error) {
 }
 
 func needsFreshWebSearch(question string) bool {
-	for _, marker := range []string{"最新", "最近", "今年", "当前", "什么时候", "几点", "校历"} {
-		if strings.Contains(question, marker) {
-			return true
-		}
-	}
-	return false
+	return NewQuestionAnalyzer(nil).Analyze(question).Freshness == FreshnessCurrent
 }
 
 func ChunkAnswer(answer string) []string {

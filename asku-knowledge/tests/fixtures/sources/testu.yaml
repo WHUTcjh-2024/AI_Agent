@@ -1,0 +1,7 @@
+school_id: testu
+sources:
+  - source_key: official
+    name: Test University
+    base_url: https://example.edu.cn/
+    domains: [example.edu.cn]
+    active: true

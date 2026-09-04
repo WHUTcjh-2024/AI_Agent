@@ -10,4 +10,5 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Chat: { sessionId?: string; initialQuestion?: string } | undefined;
   SourceDetail: { sourceId: string };
+  Timetable: undefined;
 };

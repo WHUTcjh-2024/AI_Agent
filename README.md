@@ -8,7 +8,7 @@
 - `infrastructure/docker`：本地 PostgreSQL / Redis
 - `docs`：架构与开发说明
 
-当前版本为 Architecture V0.10 / Phase 12 Agent Runtime：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题仍只走知识库。Phase 11 数据准入仍按 Canary 推进；知识 Provider 默认关闭时，混合路由会安全退化为官方网页检索。
+当前版本为 Architecture V0.11 / Router Robustness + School Portability：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题仍只走知识库。Phase 11 数据准入仍按 Canary 推进；知识 Provider 默认关闭时，混合路由会安全退化为官方网页检索。
 
 ## 启动联调环境
 
@@ -51,3 +51,5 @@ asku-knowledge/.venv/Scripts/python.exe -m unittest discover -s asku-knowledge/t
 ```
 
 `smoke.ps1` 会验证健康检查、开发登录、会话、AgentRun、可重连 SSE、引用落库、来源详情和 Admin 指标，并在结束时清理测试会话。GitHub Actions 会对每次 Push 和 Pull Request 执行后端竞态测试、静态检查、容器构建以及移动端类型检查和 Android Bundle 导出。
+
+V0.11 使用确定性 Question Analyzer 和统一学校配置；迁移步骤、路由对照、隔离验证与限制见 [V0.11 实施报告](docs/architecture-v0.11.md)。

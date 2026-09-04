@@ -101,6 +101,7 @@ func (g *Gateway) Search(ctx context.Context, request Request) (Response, error)
 			applyDocumentMetadata(&item, metadata)
 		}
 		item.SourceID = sourceID(request.SchoolID, firstPresent(item.AskUDocumentID, item.KnowledgeID))
+		hadPublicURL := firstPresent(item.SourceURL, item.OfficialURL, item.AttachmentURL, item.ParentPageURL) != ""
 		item.OfficialURL = allowedSourceURL(item.OfficialURL, allowedDomains)
 		item.AttachmentURL = allowedSourceURL(item.AttachmentURL, allowedDomains)
 		item.ParentPageURL = allowedSourceURL(item.ParentPageURL, allowedDomains)
@@ -118,7 +119,7 @@ func (g *Gateway) Search(ctx context.Context, request Request) (Response, error)
 			providerURL = allowedSourceURL(item.SourceURL, allowedDomains)
 		}
 		item.SourceURL = firstPresent(item.AttachmentURL, item.OfficialURL, item.ParentPageURL, providerURL)
-		if g.catalog != nil && item.SourceURL == "" {
+		if (g.catalog != nil || hadPublicURL) && item.SourceURL == "" {
 			continue
 		}
 		item.Title = truncateText(strings.TrimSpace(item.Title), 300)

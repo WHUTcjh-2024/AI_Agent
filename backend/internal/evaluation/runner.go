@@ -100,7 +100,7 @@ func Run(ctx context.Context, opts Options) (Report, error) {
 	if r.SourceSHA256, err = sourceDigest(filepath.Join(opts.Root, "backend")); err != nil {
 		return r, err
 	}
-	for _, name := range []string{"evals/engineering.yaml", "evals/golden-questions.yaml", "evals/fixtures/school.yaml"} {
+	for _, name := range []string{"evals/engineering.yaml", "evals/golden-questions.yaml", "evals/fixtures/school.yaml", "evals/routing.yaml"} {
 		data, err := os.ReadFile(filepath.Join(opts.Root, filepath.FromSlash(name)))
 		if err != nil {
 			return r, err

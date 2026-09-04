@@ -236,7 +236,7 @@ class UrlGate:
 
         # 4) 官方域名但尚未登记到 SourceRegistry → 需要 Discovery 先登记
         #    这里仍然放行，由 crawler 调用 register_discovered_source 落库
-        #    （*.whut.edu.cn 命中 domain_suffixes，视为官方）
+        #    （命中当前学校 allowed_domains 范围，视为官方）
 
         if not for_attachment and is_skippable(canonical):
             return UrlDecision(False, "unsupported_extension", canonical)

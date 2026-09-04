@@ -113,8 +113,8 @@ func TestGatewayDropsKnowledgeSourceURLOutsideSchoolAllowlist(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if response.Evidence[0].SourceURL != "" {
-		t.Fatalf("external URL must not be exposed as an official source: %s", response.Evidence[0].SourceURL)
+	if len(response.Evidence) != 0 {
+		t.Fatalf("evidence outside school scope must be dropped: %+v", response.Evidence)
 	}
 }
 

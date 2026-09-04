@@ -1,4 +1,4 @@
-# AskU Backend V0.10
+# AskU Backend V0.11
 
 当前后端采用 Handler → Run Coordinator → Agent Orchestrator → Capability Adapter 的单向依赖。包含 Go API、PostgreSQL 会话、Redis 成本控制、AgentRun、可重连 SSE、Policy Router、WeKnora Knowledge Adapter、模型/搜索 Provider 和用量记录。
 
@@ -125,3 +125,5 @@ go test -race ./...
 ```
 
 架构边界和扩展方式见 `../docs/architecture-v0.10.md`，混合 Agent 规则见 `../docs/phase-12-hybrid-agent.md`。
+
+V0.11 启动前必须设置 `ASKU_SCHOOL_CONFIG`，不再从核心代码隐式选择试点学校。Router 的固定时间回归集位于 `evals/routing.yaml`，由 `go test` 和工程评测共同执行。

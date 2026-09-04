@@ -3,6 +3,7 @@ package school
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -22,6 +23,9 @@ type Registry struct {
 }
 
 func Load(path string) (*Registry, error) {
+	if strings.TrimSpace(path) == "" {
+		return nil, fmt.Errorf("ASKU_SCHOOL_CONFIG must select an active school config")
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read school config: %w", err)

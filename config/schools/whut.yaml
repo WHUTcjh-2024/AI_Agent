@@ -1,14 +1,79 @@
 school_id: whut
 school_name: 武汉理工大学
+short_name: WHUT
+
+# 官方域名后缀。命中后缀的子域视为官方来源，可由 Discovery 自动登记。
+# 未命中后缀的外站链接只记录为 candidate_sources，不自动抓取（约束 #3）。
+domain_suffixes:
+  - whut.edu.cn
+
+# 官方域名范围，Go 与 Python 共用
 allowed_domains:
   - whut.edu.cn
+  - www.whut.edu.cn
   - jwc.whut.edu.cn
   - lib.whut.edu.cn
   - job.whut.edu.cn
+
+# 明确禁止抓取的域名/路径（登录页、邮箱、私有系统等）
+forbidden_domains:
+  - mail.whut.edu.cn        # 邮箱登录，属登录页面，禁止访问
+  - vpn.whut.edu.cn         # VPN 登录
+  - yz.whut.edu.cn          # 邮件/认证类
+forbidden_path_patterns:
+  - "/login"
+  - "/signin"
+  - "/sso"
+  - "/cas/"
+  - "/auth/"
+  - "/verifycode"
+  - "/captcha"
+  - "/checkcode"
+  - "login.jsp"
+  - "login.aspx"
+  - "/admin/"
+  - "/manage/"
+  - "/oa/"
+
+# 知识库标识（§24：第一版一个官方知识库）
 official_knowledge_base_id: ""
 community_knowledge_base_id: ""
 knowledge_version: "v1"
+
+# 学历层次与受众
+education_levels:
+  - UNDERGRADUATE
+  - GRADUATE
+  - BOTH
+  - PROSPECTIVE
+  - UNKNOWN
+
+# 学年/学期推断基准（用于 academic_year / semester 抽取）
+academic_calendar:
+  # 秋季学期起始月份，春季学期为 2 月
+  autumn_start_month: 9
+  spring_start_month: 2
+
+# 采集起始种子（必须是官方域名；Discovery 从这里出发自动发现）
+seeds:
+  - https://www.whut.edu.cn/
+
 source_tags:
   official: 官方
   department: 部门官网
   community: 校园经验
+
+# Mobile build-time adapter configuration. Public endpoints only; never secrets.
+mobile_timetable:
+  enabled: true
+  provider_id: whut-bachelor
+  label: 武汉理工大学教务系统
+  timezone: Asia/Shanghai
+  login_url: https://zhlgd.whut.edu.cn/tpass/login?service=https%3A%2F%2Fjwxt.whut.edu.cn%2Fjwapp%2Fsys%2Fhomeapp%2Findex.do%3FforceCas%3D1
+  allowed_hosts: [zhlgd.whut.edu.cn, jwxt.whut.edu.cn]
+  origin: https://jwxt.whut.edu.cn
+  import_path: /jwapp/sys/homeapp/
+  role_path: /jwapp/sys/homeapp/api/home/changeAppRole.do?appRole=ef212c48c8f84be79acbd9d81b090f51
+  user_path: /jwapp/sys/homeapp/api/home/currentUser.do
+  courses_path: /jwapp/sys/kcbcxby/modules/xskcb/cxxskcb.do
+  calendar_path: /jwapp/sys/kcbcxby/modules/xskcb/cxxljc.do

@@ -37,7 +37,7 @@ export function HomeScreen() {
           <View style={styles.brandRow}>
             <View>
               <Text accessibilityRole="header" style={styles.brand}>AskU</Text>
-              <Text style={styles.brandSubtitle}>武汉理工大学校园 AI 信息助手</Text>
+              <Text style={styles.brandSubtitle}>校园 AI 信息助手</Text>
             </View>
             <View style={styles.officialBadge}>
               <Ionicons name="shield-checkmark-outline" size={15} color={colors.accent} />
@@ -58,6 +58,20 @@ export function HomeScreen() {
               value={question}
             />
           </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="打开课表"
+            onPress={() => navigation.navigate('Timetable')}
+            style={({ pressed }) => [styles.timetableEntry, pressed && styles.questionPressed]}
+          >
+            <Ionicons name="calendar-outline" size={21} color={colors.accent} />
+            <View style={styles.flex}>
+              <Text style={styles.questionText}>课表</Text>
+              <Text style={styles.timetableHint}>一周安排，随时查看</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={18} color={colors.textMuted} />
+          </Pressable>
 
           <View style={styles.faqSection}>
             <Text style={styles.sectionTitle}>常问问题</Text>
@@ -99,6 +113,8 @@ const styles = StyleSheet.create({
   title: { ...typography.display, color: colors.textPrimary, maxWidth: 420 },
   subtitle: { ...typography.caption, color: colors.textSecondary, maxWidth: 430, marginTop: -spacing[2] },
   faqSection: { marginTop: spacing[10] },
+  timetableEntry: { marginTop: spacing[8], paddingVertical: spacing[4], flexDirection: 'row', alignItems: 'center', gap: spacing[3], borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  timetableHint: { ...typography.metadata, color: colors.textSecondary, marginTop: 4 },
   sectionTitle: { ...typography.caption, color: colors.textSecondary, fontWeight: '600', marginBottom: spacing[2] },
   questions: { borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
   question: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing[3], borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border, paddingVertical: spacing[3] },

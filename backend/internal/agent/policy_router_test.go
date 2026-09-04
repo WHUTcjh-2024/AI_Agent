@@ -30,7 +30,7 @@ func TestPolicyRouterUsesWebForDocumentedIntegrationProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if plan.Route != "web_search" || plan.Search == nil || plan.Knowledge != nil || plan.Reason != "integration_probe_requires_official_search" {
+	if plan.Route != "web_search" || plan.Search == nil || plan.Knowledge != nil || plan.Reason != "integration_probe" {
 		t.Fatalf("documented integration probe must route to web search: %#v", plan)
 	}
 }

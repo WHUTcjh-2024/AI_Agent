@@ -1,0 +1,14 @@
+school_id: testu
+school_name: Test University
+allowed_domains:
+  - example.edu.cn
+domain_suffixes:
+  - example.edu.cn
+forbidden_domains:
+  - login.example.edu.cn
+forbidden_path_patterns:
+  - /login
+official_knowledge_base_id: kb-testu
+knowledge_version: test-v1
+seeds:
+  - https://example.edu.cn/

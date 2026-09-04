@@ -14,6 +14,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
+from urllib.parse import urlsplit
 
 import yaml
 
@@ -25,9 +26,8 @@ EXPORTS_DIR = MODULE_ROOT / "exports"
 EVAL_DIR = MODULE_ROOT / "eval"
 MIGRATIONS_DIR = MODULE_ROOT / "database" / "migrations"
 
-# 与 AskU 主仓库的 backend 配置的相对位置，用于契约一致性测试
 REPO_ROOT = MODULE_ROOT.parent
-BACKEND_SCHOOL_CONFIG = REPO_ROOT / "config" / "schools"
+SCHOOLS_DIR = REPO_ROOT / "config" / "schools"
 
 
 # ---------------------------------------------------------------------------
@@ -112,11 +112,9 @@ class SchoolConfig:
         host = (host or "").lower().strip().rstrip(".")
         if not host:
             return False
-        if host in self.forbidden_domains:
+        if any(host == d or host.endswith("." + d) for d in self.forbidden_domains):
             return False
-        if host in self.allowed_domains:
-            return True
-        return any(host == s or host.endswith("." + s) for s in self.domain_suffixes)
+        return any(host == d or host.endswith("." + d) for d in self.allowed_domains)
 
     def is_forbidden(self, url: str) -> bool:
         """登录页 / 验证码 / 后台管理等禁止访问的路径（约束 #3）。"""
@@ -238,13 +236,26 @@ class PipelineConfig:
 def load_config(
     config_dir: Path = CONFIG_DIR,
     school_id: Optional[str] = None,
+    *,
+    school_config: Optional[Path] = None,
+    schools_dir: Path = SCHOOLS_DIR,
 ) -> PipelineConfig:
     pipeline_raw = _load_yaml(config_dir / "pipeline.yaml")
     taxonomy_raw = _load_yaml(config_dir / "taxonomy.yaml")
-    sources_raw = _load_yaml(config_dir / "sources.yaml")
-
-    school_id = school_id or sources_raw.get("school_id") or "whut"
-    school_raw = _load_yaml(config_dir / "schools" / f"{school_id}.yaml")
+    selected_path = school_config or os.environ.get("ASKU_SCHOOL_CONFIG")
+    if school_id is not None and not re.fullmatch(r"[a-zA-Z0-9_-]+", school_id):
+        raise ValueError("Invalid school_id")
+    if selected_path:
+        school_raw = _load_yaml(Path(selected_path))
+    elif school_id:
+        school_raw = _load_yaml(schools_dir / f"{school_id}.yaml")
+    else:
+        raise ValueError("Set ASKU_SCHOOL_CONFIG or provide school_id")
+    selected_id = school_raw.get("school_id", "")
+    if not re.fullmatch(r"[a-zA-Z0-9_-]+", selected_id) or (school_id and school_id != selected_id):
+        raise ValueError("School config school_id mismatch or invalid ID")
+    school_id = selected_id
+    sources_raw = _load_yaml(config_dir / "sources" / f"{school_id}.yaml")
 
     school = SchoolConfig(
         school_id=school_raw["school_id"],
@@ -256,14 +267,14 @@ def load_config(
         forbidden_path_patterns=list(school_raw.get("forbidden_path_patterns", [])),
         official_knowledge_base_id=school_raw.get("official_knowledge_base_id", ""),
         community_knowledge_base_id=school_raw.get("community_knowledge_base_id", ""),
-        knowledge_version=school_raw.get("knowledge_version", "v1"),
+        knowledge_version=school_raw.get("knowledge_version", ""),
         education_levels=list(school_raw.get("education_levels", [])),
         academic_calendar=dict(school_raw.get("academic_calendar", {})),
         seeds=list(school_raw.get("seeds", [])),
     )
 
     sources = SourceRegistry(
-        school_id=sources_raw.get("school_id", school_id),
+        school_id=sources_raw.get("school_id", ""),
         sources=[
             SourceEntry(
                 source_key=str(entry["source_key"]),
@@ -281,6 +292,11 @@ def load_config(
             for entry in sources_raw.get("sources", [])
         ],
     )
+
+    weknora = dict(pipeline_raw.get("weknora", {}))
+    if not weknora.get("knowledge_base_name"):
+        weknora["knowledge_base_name"] = f"AskU-{school.school_id}-Official"
+    validate_contract(school, sources, weknora_enabled=bool(weknora.get("enabled", False)))
 
     taxonomy = Taxonomy(
         education_levels=list(taxonomy_raw.get("education_levels", [])),
@@ -310,5 +326,43 @@ def load_config(
         reporting=dict(pipeline_raw.get("reporting", {})),
         coverage=dict(pipeline_raw.get("coverage", {})),
         pii=dict(pipeline_raw.get("pii", {})),
-        weknora=dict(pipeline_raw.get("weknora", {})),
+        weknora=weknora,
     )
+
+
+def validate_contract(school: SchoolConfig, sources: SourceRegistry, *, weknora_enabled: bool = False) -> None:
+    """Fail closed before discovery/fetch when adapter configuration disagrees."""
+    if school.school_id != sources.school_id:
+        raise ValueError("Source Registry school_id does not match School Config")
+    if not school.school_name.strip() or not school.knowledge_version.strip() or not school.allowed_domains:
+        raise ValueError("School requires name, knowledge_version and allowed_domains")
+    for domain in school.allowed_domains + school.domain_suffixes + school.forbidden_domains:
+        if not re.fullmatch(r"[a-z0-9]+(?:[.-][a-z0-9]+)*", domain):
+            raise ValueError(f"Invalid configured domain: {domain}")
+    for suffix in school.domain_suffixes:
+        if not school.is_official_domain(suffix):
+            raise ValueError(f"Discovery suffix outside allowed domains: {suffix}")
+    if weknora_enabled and not school.official_knowledge_base_id.strip():
+        raise ValueError("Enabled WeKnora requires official_knowledge_base_id")
+
+    def check_url(url: str) -> str:
+        parsed = urlsplit(url)
+        host = parsed.hostname or ""
+        if parsed.scheme not in ("http", "https") or parsed.username or parsed.password or not school.is_official_domain(host) or school.is_forbidden(url):
+            raise ValueError(f"URL outside public school scope: {url}")
+        return host
+
+    for seed in school.seeds:
+        check_url(seed)
+    keys = set()
+    for source in sources.sources:
+        if not source.source_key or source.source_key in keys:
+            raise ValueError("Source keys must be nonempty and unique")
+        keys.add(source.source_key)
+        if not source.active:
+            continue
+        host = check_url(source.base_url)
+        if not source.domains or any(not school.is_official_domain(d) for d in source.domains):
+            raise ValueError(f"Source domains outside school scope: {source.source_key}")
+        if not any(host == d or host.endswith("." + d) for d in source.domains):
+            raise ValueError(f"Source base_url outside registered domains: {source.source_key}")

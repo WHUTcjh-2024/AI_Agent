@@ -171,11 +171,12 @@ pii:
 # 十、WeKnora（§2 WeKnora First、§26 Importer、§27 Canary）
 # ---------------------------------------------------------------
 weknora:
+  enabled: false  # Enabling requires official_knowledge_base_id in School Config
   base_url: "http://localhost:8080"
   api_key_env: WEKNORA_API_KEY
   timeout_seconds: 60
   # 第一版只用一个官方知识库 + Tags，不按主题拆库（§24）
-  knowledge_base_name: "AskU-WHUT-Official"
+  knowledge_base_name: ""  # Derived from the active school when empty
   # Canary 通过前禁止全量导入（约束 #2）
   canary_required: true
   canary_requirements:

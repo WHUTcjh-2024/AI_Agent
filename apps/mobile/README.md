@@ -120,7 +120,30 @@ UI 只依赖 `ChatService` 与标准 `ChatEvent`。当前实现：
 
 ```bash
 npm run typecheck
+npm run lint
+npm test
 npm run doctor
 npm run export:android
 npm run export:ios
 ```
+
+## 课表
+
+首页「课表」进入独立页面，不增加底部 Tab。支持武汉理工本科官方 WebView 登录导入、周次/日期浏览、冲突课程详情、重新导入与本地离线缓存。空状态可选择「先体验演示课表」，演示数据会明确标记，可用于完整离线 UI 验证。
+
+首次加入 `react-native-webview` / `expo-crypto` 后，需要重新构建原生 App；仅重启 Metro 不会更新旧安装包的原生模块。Web 版可验证课表 UI，但不提供学校 WebView 登录。
+
+修改 `src/features/timetable/providers/whut/whut-browser-entry.ts` 或 `whut-parser.ts` 后运行 `npm run timetable:bundle`。生成的独立浏览器脚本一并提交，`npm test` 会检测过期脚本，避免运行时函数序列化在 Hermes/压缩构建中失效。
+
+`npm run lint` 检查本次课表功能、接入文件、测试和生成脚本；`npm run lint:all` 额外扫描历史代码。新引入的 Expo ESLint 配置在旧聊天/历史/来源组件中发现已有问题，未在课表任务内重构它们。全项目 TypeScript 检查仍由 `npm run typecheck` 执行。
+
+完整架构、安全边界、自动测试和真机验收步骤见 [课表开发报告](../../docs/features/timetable.md)；协议依据见 [iwut 研究记录](../../docs/research/iwut-course-reference.md)。
+
+### 单校移植（V0.11）
+
+设置 `ASKU_SCHOOL_CONFIG` 为根目录学校 YAML 的绝对路径，运行
+`npm run timetable:bundle`，然后类型检查、测试与导出。
+`scripts/build-school-config.mjs` 只生成公开 Mobile Adapter 字段，不包含知识库 ID。
+`mobile_timetable` 未启用时不开放教务导入；已有解析器适用于当前教务接口协议。
+不同教务协议仍需专门的 Provider，这是课表功能限制，不影响校园问答移植。
+课表缓存按构建学校隔离；旧版未分学校的本地课表需重新导入。
