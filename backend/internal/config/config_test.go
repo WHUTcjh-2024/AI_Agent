@@ -2,6 +2,11 @@ package config
 
 import "testing"
 
+func useMockWebSearch(t *testing.T) {
+	t.Helper()
+	t.Setenv("ASKU_WEB_SEARCH_PROVIDER", "mock")
+}
+
 func TestLoadRejectsIncompleteOpenAICompatibleConfiguration(t *testing.T) {
 	t.Setenv("ASKU_LLM_PROVIDER", "openai-compatible")
 	t.Setenv("ASKU_LLM_BASE_URL", "")
@@ -12,7 +17,24 @@ func TestLoadRejectsIncompleteOpenAICompatibleConfiguration(t *testing.T) {
 	}
 }
 
+func TestLoadUsesOrderedLLMModelPool(t *testing.T) {
+	useMockWebSearch(t)
+	t.Setenv("ASKU_LLM_PROVIDER", "openai-compatible")
+	t.Setenv("ASKU_LLM_BASE_URL", "https://provider.example/v1")
+	t.Setenv("ASKU_LLM_API_KEY", "secret")
+	t.Setenv("ASKU_LLM_MODEL", "legacy-model")
+	t.Setenv("ASKU_LLM_MODELS", "first, second, third")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.LLMModel != "first" || len(cfg.LLMModels) != 3 || cfg.LLMModels[2] != "third" {
+		t.Fatalf("unexpected model pool: %#v", cfg.LLMModels)
+	}
+}
+
 func TestLoadRejectsNegativePricing(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
 	t.Setenv("ASKU_LLM_INPUT_RMB_PER_MTOK", "-1")
 	if _, err := Load(); err == nil {
@@ -21,7 +43,9 @@ func TestLoadRejectsNegativePricing(t *testing.T) {
 }
 
 func TestLoadMockProviderDefaults(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
+	t.Setenv("ASKU_LLM_MODEL", "asku-mock")
 	t.Setenv("ASKU_DEV_AUTH_ENABLED", "")
 	t.Setenv("ASKU_LLM_INPUT_RMB_PER_MTOK", "")
 	t.Setenv("ASKU_LLM_OUTPUT_RMB_PER_MTOK", "")
@@ -41,6 +65,7 @@ func TestLoadMockProviderDefaults(t *testing.T) {
 }
 
 func TestLoadRejectsIncompleteWeKnoraConfiguration(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
 	t.Setenv("ASKU_KNOWLEDGE_PROVIDER", "weknora")
 	t.Setenv("ASKU_WEKNORA_BASE_URL", "")
@@ -51,6 +76,7 @@ func TestLoadRejectsIncompleteWeKnoraConfiguration(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidKnowledgeTopN(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
 	t.Setenv("ASKU_KNOWLEDGE_PROVIDER", "disabled")
 	t.Setenv("ASKU_KNOWLEDGE_TOP_N", "11")
@@ -93,6 +119,7 @@ func TestLoadRejectsMalformedOperationalSettings(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidCostControlSettings(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
 	t.Setenv("ASKU_ANSWER_CACHE_TTL", "0s")
 	if _, err := Load(); err == nil {
@@ -107,9 +134,18 @@ func TestLoadRejectsInvalidCostControlSettings(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidReportingTimeZone(t *testing.T) {
+	useMockWebSearch(t)
 	t.Setenv("ASKU_LLM_PROVIDER", "mock")
 	t.Setenv("ASKU_REPORTING_TIMEZONE", "Mars/Olympus")
 	if _, err := Load(); err == nil {
 		t.Fatal("invalid reporting timezone must fail at startup")
+	}
+}
+
+func TestLoadRequiresExplicitRuntimeProviders(t *testing.T) {
+	t.Setenv("ASKU_LLM_PROVIDER", "")
+	t.Setenv("ASKU_WEB_SEARCH_PROVIDER", "")
+	if _, err := Load(); err == nil {
+		t.Fatal("missing runtime providers must fail instead of silently enabling mock data")
 	}
 }

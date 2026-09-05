@@ -3,6 +3,7 @@ package llm
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type ProviderError struct {
@@ -27,4 +28,18 @@ func errorCode(err error) string {
 		return providerError.Code
 	}
 	return "provider_error"
+}
+
+func modelCannotContinue(err error) bool {
+	var providerError *ProviderError
+	if !errors.As(err, &providerError) {
+		return false
+	}
+	code := strings.ToLower(strings.TrimSpace(providerError.Code))
+	switch code {
+	case "allocationquota.freetieronly", "modelnotfound", "model_not_found", "model_not_active", "model_deprecated":
+		return true
+	default:
+		return false
+	}
 }

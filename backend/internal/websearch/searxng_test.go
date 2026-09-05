@@ -9,7 +9,7 @@ import (
 
 func TestSearXNGProviderMapsContractAndAuth(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path != "/search" || request.URL.Query().Get("q") != "校历 (site:whut.edu.cn)" || request.URL.Query().Get("format") != "json" {
+		if request.URL.Path != "/search" || request.URL.Query().Get("q") != "校历 site:whut.edu.cn" || request.URL.Query().Get("format") != "json" {
 			t.Fatalf("unexpected request: %s", request.URL.String())
 		}
 		if request.Header.Get("Authorization") != "Bearer secret" {
@@ -29,5 +29,17 @@ func TestSearXNGProviderMapsContractAndAuth(t *testing.T) {
 	}
 	if len(results) != 1 || results[0].Publisher != "jwc.whut.edu.cn" || results[0].PublishedAt == nil {
 		t.Fatalf("unexpected result: %#v", results)
+	}
+}
+
+func TestScopedQueryDropsDomainsCoveredByParent(t *testing.T) {
+	query := scopedQuery("四六级报名", []string{
+		"whut.edu.cn",
+		"www.whut.edu.cn",
+		"jwc.whut.edu.cn",
+		"lib.whut.edu.cn",
+	})
+	if query != "四六级报名 site:whut.edu.cn" {
+		t.Fatalf("unexpected scoped query: %q", query)
 	}
 }

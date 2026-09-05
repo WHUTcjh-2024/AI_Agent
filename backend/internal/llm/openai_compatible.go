@@ -77,8 +77,8 @@ func (p *OpenAICompatibleProvider) Stream(ctx context.Context, request Request) 
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		defer response.Body.Close()
-		_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
-		return nil, statusError(response.StatusCode)
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 64<<10))
+		return nil, statusError(response.StatusCode, body)
 	}
 
 	events := make(chan StreamEvent)
@@ -146,8 +146,8 @@ func (p *OpenAICompatibleProvider) doJSON(ctx context.Context, payload chatCompl
 	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
-		return statusError(response.StatusCode)
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 64<<10))
+		return statusError(response.StatusCode, body)
 	}
 	decoder := json.NewDecoder(io.LimitReader(response.Body, 4<<20))
 	if err := decoder.Decode(target); err != nil {
@@ -214,12 +214,40 @@ func (p *OpenAICompatibleProvider) setHeaders(request *http.Request) {
 	request.Header.Set("Accept", "application/json")
 }
 
-func statusError(statusCode int) error {
+func statusError(statusCode int, body []byte) error {
+	code := upstreamErrorCode(body)
+	if code == "" {
+		code = "upstream_http_error"
+	}
 	return &ProviderError{
-		Code:       "upstream_http_error",
+		Code:       code,
 		StatusCode: statusCode,
 		Retryable:  statusCode == http.StatusTooManyRequests || statusCode >= 500,
 	}
+}
+
+func upstreamErrorCode(body []byte) string {
+	var payload struct {
+		Code  string `json:"code"`
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if len(body) == 0 || json.Unmarshal(body, &payload) != nil {
+		return ""
+	}
+	code := strings.TrimSpace(firstNonEmpty(payload.Code, payload.Error.Code))
+	if code == "unknown" || len(code) > 128 {
+		return ""
+	}
+	for _, character := range code {
+		if (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
+			(character >= '0' && character <= '9') || strings.ContainsRune("._-", character) {
+			continue
+		}
+		return ""
+	}
+	return code
 }
 
 func firstNonEmpty(values ...string) string {

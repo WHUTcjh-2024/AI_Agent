@@ -75,12 +75,17 @@ func main() {
 	case "mock":
 		llmProvider = llm.NewMockProvider(cfg.LLMModel)
 	case "openai-compatible":
-		llmProvider, err = llm.NewOpenAICompatibleProvider(
+		baseProvider, providerErr := llm.NewOpenAICompatibleProvider(
 			cfg.LLMBaseURL, cfg.LLMAPIKey, cfg.LLMModel,
 			&http.Client{Timeout: cfg.LLMTimeout},
 		)
+		if providerErr != nil {
+			logger.Error("configure llm provider", "provider", cfg.LLMProvider, "error", providerErr)
+			os.Exit(1)
+		}
+		llmProvider, err = llm.NewModelPoolProvider(baseProvider, cfg.LLMModels)
 		if err != nil {
-			logger.Error("configure llm provider", "provider", cfg.LLMProvider, "error", err)
+			logger.Error("configure llm model pool", "provider", cfg.LLMProvider, "error", err)
 			os.Exit(1)
 		}
 	}
@@ -167,7 +172,7 @@ func main() {
 	}
 
 	go func() {
-		logger.Info("AskU API started", "addr", cfg.HTTPAddr, "agent_mode", cfg.AgentMode, "llm_provider", cfg.LLMProvider, "llm_model", cfg.LLMModel, "web_search_provider", cfg.WebSearchProvider, "knowledge_provider", cfg.KnowledgeProvider)
+		logger.Info("AskU API started", "addr", cfg.HTTPAddr, "agent_mode", cfg.AgentMode, "llm_provider", cfg.LLMProvider, "llm_model", cfg.LLMModel, "llm_model_pool_size", len(cfg.LLMModels), "web_search_provider", cfg.WebSearchProvider, "knowledge_provider", cfg.KnowledgeProvider)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("HTTP server failed", "error", err)
 			os.Exit(1)

@@ -21,6 +21,7 @@ type Config struct {
 	LLMBaseURL             string
 	LLMAPIKey              string
 	LLMModel               string
+	LLMModels              []string
 	LLMTimeout             time.Duration
 	LLMInputPrice          float64
 	LLMOutputPrice         float64
@@ -57,12 +58,13 @@ func Load() (Config, error) {
 		SchoolConfig:           strings.TrimSpace(os.Getenv("ASKU_SCHOOL_CONFIG")),
 		DevAuthEnabled:         false,
 		AgentMode:              env("ASKU_AGENT_MODE", "policy"),
-		LLMProvider:            env("ASKU_LLM_PROVIDER", "mock"),
+		LLMProvider:            strings.TrimSpace(os.Getenv("ASKU_LLM_PROVIDER")),
 		LLMBaseURL:             strings.TrimSpace(os.Getenv("ASKU_LLM_BASE_URL")),
 		LLMAPIKey:              strings.TrimSpace(os.Getenv("ASKU_LLM_API_KEY")),
-		LLMModel:               env("ASKU_LLM_MODEL", "asku-mock"),
+		LLMModel:               strings.TrimSpace(os.Getenv("ASKU_LLM_MODEL")),
+		LLMModels:              splitCSV(os.Getenv("ASKU_LLM_MODELS")),
 		LLMTimeout:             45 * time.Second,
-		WebSearchProvider:      env("ASKU_WEB_SEARCH_PROVIDER", "mock"),
+		WebSearchProvider:      strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_PROVIDER")),
 		WebSearchBaseURL:       strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_BASE_URL")),
 		WebSearchAPIKey:        strings.TrimSpace(os.Getenv("ASKU_WEB_SEARCH_API_KEY")),
 		WebSearchTimeout:       12 * time.Second,
@@ -84,6 +86,11 @@ func Load() (Config, error) {
 		AllowedOrigins:         splitCSV(env("ASKU_CORS_ORIGINS", "*")),
 		AdminToken:             strings.TrimSpace(os.Getenv("ASKU_ADMIN_TOKEN")),
 		ReportingTimeZone:      env("ASKU_REPORTING_TIMEZONE", "Asia/Shanghai"),
+	}
+	if len(cfg.LLMModels) == 0 {
+		cfg.LLMModels = []string{cfg.LLMModel}
+	} else {
+		cfg.LLMModel = cfg.LLMModels[0]
 	}
 	var err error
 	if cfg.DevAuthEnabled, err = envBool("ASKU_DEV_AUTH_ENABLED", cfg.DevAuthEnabled); err != nil {
@@ -146,6 +153,9 @@ func Load() (Config, error) {
 	if cfg.LLMProvider == "openai-compatible" {
 		if cfg.LLMBaseURL == "" || cfg.LLMAPIKey == "" || cfg.LLMModel == "" {
 			return Config{}, errors.New("openai-compatible provider requires ASKU_LLM_BASE_URL, ASKU_LLM_API_KEY and ASKU_LLM_MODEL")
+		}
+		if len(cfg.LLMModels) > 32 {
+			return Config{}, errors.New("ASKU_LLM_MODELS must contain at most 32 models")
 		}
 	}
 	if cfg.WebSearchProvider != "mock" && cfg.WebSearchProvider != "searxng" {

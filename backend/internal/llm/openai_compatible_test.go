@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -93,5 +94,23 @@ func TestOpenAICompatibleErrorDoesNotLeakSecret(t *testing.T) {
 	}
 	if strings.Contains(err.Error(), "top-secret-key") || strings.Contains(err.Error(), "secret vendor payload") {
 		t.Fatalf("provider error leaked sensitive data: %v", err)
+	}
+}
+
+func TestOpenAICompatibleKeepsSafeUpstreamErrorCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"code":"AllocationQuota.FreeTierOnly","message":"quota exhausted"}`))
+	}))
+	defer server.Close()
+	provider, err := NewOpenAICompatibleProvider(server.URL, "secret", "model", server.Client())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = provider.Generate(context.Background(), Request{})
+	var providerError *ProviderError
+	if !errors.As(err, &providerError) || providerError.Code != "AllocationQuota.FreeTierOnly" || providerError.StatusCode != http.StatusForbidden {
+		t.Fatalf("unexpected provider error: %v", err)
 	}
 }

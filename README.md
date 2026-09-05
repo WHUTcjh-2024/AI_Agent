@@ -8,7 +8,7 @@
 - `infrastructure/docker`：本地 PostgreSQL / Redis
 - `docs`：架构与开发说明
 
-当前版本为 Architecture V0.11 / Router Robustness + School Portability：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题仍只走知识库。Phase 11 数据准入仍按 Canary 推进；知识 Provider 默认关闭时，混合路由会安全退化为官方网页检索。
+当前版本为 Architecture V0.11 / Router Robustness + School Portability：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题只走知识库。武汉理工大学 Question-First 知识库已完成首批 39 篇清洗文档导入，运行环境已接通 WeKnora、SearXNG 和 OpenAI-compatible 模型池。
 
 ## 启动联调环境
 
@@ -24,7 +24,7 @@ Compose 会同时启动 Backend、PostgreSQL 和 Redis。仅 Backend 的 `18080`
 
 ## 后续开发
 
-知识数据仍在准备中，尚未完成真实数据验收，Knowledge Provider 继续保持关闭。Phase 13A 工程评测和 Phase 10B 内部 Admin 控制台已实现，下一步补齐真实账号、安全凭证存储和试点成本边界；数据到位后按 Canary、正式导入、真实评测、校园试点推进。任务顺序、现有缺口和验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
+首批知识数据已通过准入并导入当前 WeKnora 知识库，严格高频问题覆盖率为 83/103（80.6%）。下一步补齐奖学金、综合测评和校历等缺口，执行真实知识质量评测，并完成微信登录、安全凭证存储和正式试点部署。历史计划与验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
 
 在仓库根目录运行 `./scripts/eval.ps1`，可自动启动独立评测依赖并执行 34 项工程检查，输出 JSON/Markdown 报告；3 个真实知识问题单独标记为 `blocked_data`。使用方式见[工程评测](evals/README.md)，实现边界与联调修复见 [Phase 13A](docs/phase-13a-engineering-evaluation.md)。
 

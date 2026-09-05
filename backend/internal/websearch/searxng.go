@@ -83,18 +83,44 @@ func (p *SearXNGProvider) Search(ctx context.Context, searchRequest ProviderRequ
 }
 
 func scopedQuery(query string, domains []string) string {
-	clauses := make([]string, 0, len(domains))
+	normalized := make([]string, 0, len(domains))
 	for _, domain := range domains {
 		domain = strings.ToLower(strings.TrimSpace(domain))
 		if domain == "" || strings.ContainsAny(domain, " /:()") {
 			continue
 		}
-		clauses = append(clauses, "site:"+domain)
+		normalized = append(normalized, domain)
 	}
-	if len(clauses) == 0 {
+	domains = broadestDomains(normalized)
+	if len(domains) == 0 {
 		return strings.TrimSpace(query)
 	}
-	return strings.TrimSpace(query) + " (" + strings.Join(clauses, " OR ") + ")"
+	clauses := make([]string, 0, len(domains))
+	for _, domain := range domains {
+		clauses = append(clauses, "site:"+domain)
+	}
+	return strings.TrimSpace(query) + " " + strings.Join(clauses, " OR ")
+}
+
+func broadestDomains(domains []string) []string {
+	result := make([]string, 0, len(domains))
+	for index, domain := range domains {
+		covered := false
+		for otherIndex, other := range domains {
+			if index == otherIndex {
+				continue
+			}
+			if domain == other || strings.HasSuffix(domain, "."+other) {
+				covered = true
+				break
+			}
+		}
+		if covered {
+			continue
+		}
+		result = append(result, domain)
+	}
+	return result
 }
 
 func parsePublishedAt(value string) time.Time {

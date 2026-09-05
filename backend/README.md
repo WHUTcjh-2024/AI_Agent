@@ -12,7 +12,7 @@ V0.10 增加 Phase 12 混合 Agent 编排。WeKnora ID 经 `knowledge.*` Catalog
 - `openai-compatible` Provider 可通过环境变量接入兼容 `/chat/completions` 的 API；Base URL、Key、Model 均不写入代码或日志。
 - `/v1/auth/wechat` 保留正式接口，但没有 AppID/签名时返回 `wechat_not_configured`。
 - `SchoolContext` 从 `config/schools/whut.yaml` 加载，业务 Handler 不写死学校域名和知识库 ID。
-- `ASKU_WEB_SEARCH_PROVIDER=mock` 默认不访问公网；切换 `searxng` 只改变 Provider Adapter。官方域名过滤、抓取、提取与三级缓存仍由 Gateway 统一执行。
+- 正常运行必须显式配置真实 LLM 和 Web Search；Mock Provider 只允许隔离测试环境显式启用。官方域名过滤、抓取、提取与三级缓存仍由 Gateway 统一执行。
 - Redis 只实现 JSON Cache、Rate Limit 和 Idempotency 等基础端口；答案是否可缓存、如何按学校知识版本失效，由 Agent 与 SchoolContext 决定。
 - `knowledge` Catalog 未找到映射或没有允许域内公开 URL 时，Evidence 不得进入正式答案；任何 `local_file_path` 都不会被 API 查询或返回。
 
@@ -59,13 +59,14 @@ Authorization: Bearer <access_token>
 
 ## LLM Gateway
 
-默认 Mock 模式无需密钥。切换兼容 API 时配置：
+正常运行需要配置兼容 API：
 
 ```text
 ASKU_LLM_PROVIDER=openai-compatible
 ASKU_LLM_BASE_URL=https://provider.example/v1
 ASKU_LLM_API_KEY=<secret>
 ASKU_LLM_MODEL=<model>
+ASKU_LLM_MODELS=<model-1,model-2,...>
 ASKU_LLM_INPUT_RMB_PER_MTOK=<input price>
 ASKU_LLM_OUTPUT_RMB_PER_MTOK=<output price>
 ```

@@ -1,0 +1,81 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: AskU Search
+
+search:
+  safe_search: 1
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "af5f25a7ad4d0c4d13f290c88d13ef53bd68538297755d9a517852c442d6bd3c"
+  limiter: false
+  image_proxy: false
+
+engines:
+  - name: baidu
+    engine: baidu
+    shortcut: bd
+    disabled: true
+  - name: bing
+    engine: bing
+    shortcut: bi
+    base_url: https://cn.bing.com
+    disabled: true
+  - name: 360search
+    engine: 360search
+    shortcut: 360so
+    timeout: 20.0
+    disabled: false
+  - name: quark
+    engine: quark
+    quark_category: general
+    categories:
+      - general
+    shortcut: qk
+    disabled: true
+  - name: qwant
+    engine: qwant
+    qwant_categ: web
+    categories:
+      - general
+      - web
+    shortcut: qw
+    disabled: true
+  - name: sogou
+    engine: sogou
+    shortcut: sogou
+    disabled: false
+  - name: yahoo
+    engine: yahoo
+    shortcut: yh
+    disabled: false
+  - name: yandex
+    engine: yandex
+    categories:
+      - general
+    search_type: web
+    shortcut: yd
+    disabled: false
+  - name: mojeek
+    engine: mojeek
+    categories:
+      - general
+      - web
+    shortcut: mjk
+    disabled: true
+  - name: yep
+    engine: yep
+    shortcut: yep
+    disabled: true
+  - name: brave
+    disabled: true
+  - name: duckduckgo
+    disabled: true
+  - name: google cse
+    disabled: true
+  - name: startpage
+    disabled: true
