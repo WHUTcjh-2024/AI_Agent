@@ -154,8 +154,15 @@ def detect_pii(
     roster_signal = bool(_ROSTER_STRONG_RE.search(title or "")) or len(_ROSTER_STRONG_RE.findall(text)) >= 2
     has_name_column = bool(tables_markdown and re.search(r"\|\s*姓名\s*\|", tables_markdown))
     has_score_column = bool(tables_markdown and re.search(r"\|\s*(成绩|绩点|学分|综合测评|排名)\s*\|", tables_markdown))
+    name_rows = sum(1 for line in text.splitlines() if _NAME_ROW_RE.match(line))
 
-    if roster_signal and (has_name_column or has_score_column):
+    # A policy table can legitimately contain a generic "成绩" column and
+    # mention lists in prose. Scores become personal data only when the title
+    # identifies a roster/result, or when the table also identifies people.
+    title_roster_signal = bool(_ROSTER_STRONG_RE.search(title or ""))
+    if (title_roster_signal and (has_name_column or has_score_column)) or (
+        roster_signal and has_name_column and (student_ids > 0 or name_rows >= 3)
+    ):
         rows = [row for row in tables_markdown.split("\n") if row.strip().startswith("|")]
         detail["roster_table"] = max(0, len(rows) - 2)
         categories.append("student_roster" if has_name_column else "personal_score")
@@ -164,7 +171,6 @@ def detect_pii(
             snippet = (title or "")[:120]
 
     # 同名同行的"姓名 + 学号/成绩"行
-    name_rows = sum(1 for line in text.splitlines() if _NAME_ROW_RE.match(line))
     if name_rows >= 3:
         detail["name_rows"] = name_rows
         categories.append("student_roster")

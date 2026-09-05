@@ -1,0 +1,184 @@
+version: 1
+school_id: whut
+as_of: '2026-09-05'
+coverage_target: 0.90
+coverage_unit: evidence_reviewed_question
+# IDs reuse taxonomy.yaml. Question IDs retain separate exam concepts.
+budgets:
+  max_listing_pages: 100
+  max_pages_per_topic: 500
+  max_pages_total: 500
+  max_attachments_total: 650
+  max_depth: 4
+  max_file_size_mb: 30
+  max_runtime_seconds: 3600
+topics:
+  - id: transfer_major
+    name: 转专业
+    priority: P0
+    title_pattern: '转专业'
+    preferred_sources: [本科生院, 学院官网, 本科招生网]
+    questions:
+      - {id: transfer_time, question: 转专业什么时候申请, freshness_required: true}
+      - {id: transfer_eligibility, question: 转专业申请条件是什么}
+      - {id: transfer_exclusions, question: 哪些学生不能转专业}
+      - {id: transfer_cross_college, question: 可以跨学院转专业吗}
+      - {id: transfer_times, question: 在校期间可以转几次专业}
+      - {id: transfer_exam, question: 转专业笔试面试怎么安排, college_required: true}
+      - {id: transfer_results, question: 转专业结果什么时候公布, freshness_required: true}
+      - {id: transfer_credit, question: 转专业后学分如何认定}
+      - {id: transfer_materials, question: 转专业需要提交什么材料}
+      - {id: transfer_capacity, question: 转专业各专业接收名额是多少, college_required: true, freshness_required: true}
+  - id: course_selection
+    name: 选课
+    priority: P0
+    title_pattern: '选课|补退选|课程预选|开课'
+    preferred_sources: [本科生院]
+    questions:
+      - {id: course_time, question: 当前学期选课什么时候开始, freshness_required: true}
+      - {id: course_system, question: 本科生选课系统入口是什么}
+      - {id: course_steps, question: 选课具体操作流程是什么}
+      - {id: course_preselect, question: 课程预选与正式选课有什么区别}
+      - {id: course_add_drop, question: 补退选什么时候进行, freshness_required: true}
+      - {id: course_pe, question: 体育课怎么选}
+      - {id: course_general, question: 通识选修课需要修多少学分}
+      - {id: course_cross_major, question: 如何跨专业选课}
+      - {id: course_capacity, question: 选不上课或课程停开怎么办}
+      - {id: course_conflict, question: 选课时间冲突怎么办}
+      - {id: course_credit_limit, question: 每学期选课学分上下限是多少}
+      - {id: course_arrears, question: 欠学费会影响选课吗}
+  - id: cet
+    name: 四六级
+    priority: P0
+    title_pattern: '四[、，,]?六级|四、六级|CET|大学英语.{0,5}级'
+    preferred_sources: [本科生院]
+    questions:
+      - {id: cet_time, question: 四六级什么时候报名, freshness_required: true}
+      - {id: cet_eligibility, question: 四六级报名条件是什么}
+      - {id: cet_portal, question: 四六级报名入口是什么}
+      - {id: cet_fee, question: 四六级报名费用和缴费流程是什么}
+      - {id: cet_exam, question: 四六级考试时间是什么时候, freshness_required: true}
+      - {id: cet_ticket, question: 四六级准考证什么时候打印, freshness_required: true}
+      - {id: cet_score, question: 四六级成绩什么时候查询, freshness_required: true}
+      - {id: cet_oral, question: 四六级口语考试如何报名}
+      - {id: cet_late, question: 四六级错过报名还能补报吗}
+      - {id: cet_score_report, question: 四六级电子成绩报告单怎么下载}
+  - id: exam
+    name: 考试
+    priority: P0
+    title_pattern: '考试|考核|成绩|学籍管理'
+    preferred_sources: [本科生院]
+    questions:
+      - {id: exam_schedule, question: 期末考试安排在哪里查}
+      - {id: exam_absence, question: 无故缺考有什么后果}
+      - {id: exam_recheck, question: 对考试成绩有异议如何申请复核}
+      - {id: exam_gpa, question: 平均学分绩点如何计算}
+      - {id: exam_id, question: 参加课程考试需要带什么证件}
+      - {id: exam_late, question: 考试迟到多久不能进入考场}
+  - id: makeup_retake
+    name: 补考、缓考、重修
+    priority: P0
+    title_pattern: '补考|缓考|补（缓）考|补\(缓\)考|重修|重考|学籍管理|课程考核|免听'
+    preferred_sources: [本科生院]
+    questions:
+      - {id: makeup_eligibility, subtopic: makeup_exam, question: 挂科后哪些课程可以补考}
+      - {id: makeup_time, subtopic: makeup_exam, question: 开学补考什么时候进行, freshness_required: true}
+      - {id: makeup_score, subtopic: makeup_exam, question: 补考成绩怎样记载}
+      - {id: deferred_apply, subtopic: deferred_exam, question: 缓考怎么申请}
+      - {id: deferred_materials, subtopic: deferred_exam, question: 缓考需要提交哪些证明材料}
+      - {id: deferred_timing, subtopic: deferred_exam, question: 缓考获批后什么时候参加考试}
+      - {id: retake_apply, subtopic: retake, question: 重修如何报名选课}
+      - {id: retake_fee, subtopic: retake, question: 重修是否需要缴费}
+      - {id: retake_exemption, subtopic: retake, question: 重修课程如何申请免听}
+      - {id: retake_score, subtopic: retake, question: 重修成绩如何记载}
+      - {id: reexam_distinction, subtopic: reexam, question: 重考和补考重修分别适用于什么情况}
+  - id: student_status
+    name: 学籍
+    priority: P0
+    title_pattern: '学籍|休学|复学|退学|毕业|学位|转学'
+    preferred_sources: [本科生院, 学生工作部]
+    questions:
+      - {id: status_suspend, question: 休学如何申请}
+      - {id: status_resume, question: 休学期满如何复学}
+      - {id: status_retain, question: 保留学籍有哪些规定}
+      - {id: status_withdraw, question: 退学有哪些情形和办理流程}
+      - {id: status_extend, question: 延长学习年限如何申请}
+      - {id: status_early, question: 提前毕业有哪些要求}
+      - {id: status_transfer_school, question: 转学有哪些条件和程序}
+      - {id: status_graduate, question: 毕业资格和学分要求是什么}
+      - {id: status_degree, question: 本科学士学位授予条件是什么}
+      - {id: status_register, question: 开学注册和请假有哪些规定}
+  - id: scholarship
+    name: 奖学金
+    priority: P0
+    title_pattern: '奖学金|学生奖励|奖（助）学金|奖助学金|评先'
+    preferred_sources: [学生工作部, 学院官网]
+    questions:
+      - {id: scholarship_national, question: 本科生国家奖学金申请条件是什么}
+      - {id: scholarship_inspirational, question: 国家励志奖学金申请条件是什么}
+      - {id: scholarship_school, question: 学校奖学金评定条件是什么}
+      - {id: scholarship_social, question: 社会奖学金如何申请, college_required: true}
+      - {id: scholarship_time, question: 奖学金什么时候评审, freshness_required: true}
+      - {id: scholarship_score, question: 奖学金对成绩和综测有什么要求}
+      - {id: scholarship_materials, question: 奖学金申请需要什么材料}
+      - {id: scholarship_publicity, question: 奖学金公示异议如何反映}
+      - {id: scholarship_quota, question: 本年度奖学金名额怎样分配, freshness_required: true}
+      - {id: scholarship_multiple, question: 不同奖学金能否同时获得}
+  - id: comprehensive_evaluation
+    name: 综合测评
+    priority: P0
+    title_pattern: '综合素质测评|综合测评|综测'
+    preferred_sources: [学生工作部, 学院官网]
+    questions:
+      - {id: evaluation_formula, question: 本科生综测总分如何计算, college_required: true}
+      - {id: evaluation_moral, question: 综测德育分如何计算, college_required: true}
+      - {id: evaluation_academic, question: 综测智育分如何计算, college_required: true}
+      - {id: evaluation_sports, question: 综测体育分如何计算, college_required: true}
+      - {id: evaluation_competition, question: 学科竞赛获奖如何加分, college_required: true}
+      - {id: evaluation_cadre, question: 学生干部工作如何加分, college_required: true}
+      - {id: evaluation_volunteer, question: 志愿服务和社会实践如何加分, college_required: true}
+      - {id: evaluation_research, question: 科研论文和专利如何加分, college_required: true}
+      - {id: evaluation_penalty, question: 违纪处分如何影响综测, college_required: true}
+      - {id: evaluation_appeal, question: 对综测结果有异议如何申诉, college_required: true}
+  - id: academic_calendar
+    name: 校历
+    priority: P0
+    title_pattern: '校历|放假|暑假|寒假|开学'
+    preferred_sources: [党政办公室, 本科生院]
+    questions:
+      - {id: calendar_download, question: 当前学期官方校历在哪里下载, freshness_required: true}
+      - {id: calendar_start, question: 当前学期开学上课时间是什么, freshness_required: true}
+      - {id: calendar_winter, question: 寒假什么时候开始, freshness_required: true}
+      - {id: calendar_summer, question: 暑假什么时候开始, freshness_required: true}
+      - {id: calendar_weeks, question: 本学期教学周和考试周如何安排, freshness_required: true}
+      - {id: calendar_holiday, question: 国庆节放假和调休如何安排, freshness_required: true}
+  - id: library
+    name: 图书馆
+    priority: P0
+    title_pattern: '图书馆|借阅|续借|入馆|座位|研讨室|校外访问'
+    preferred_sources: [图书馆]
+    questions:
+      - {id: library_hours, question: 各校区图书馆开闭馆时间是什么}
+      - {id: library_borrow, question: 本科生可以借多少本书借多久}
+      - {id: library_renew, question: 图书如何续借}
+      - {id: library_overdue, question: 图书逾期或丢失如何处理}
+      - {id: library_seat, question: 图书馆座位如何预约}
+      - {id: library_room, question: 图书馆研讨室如何预约}
+      - {id: library_database, question: 如何访问图书馆电子数据库}
+      - {id: library_remote, question: 校外如何访问图书馆资源}
+      - {id: library_entry, question: 入馆需要什么证件有哪些规则}
+  - id: campus_card
+    name: 校园卡
+    priority: P0
+    title_pattern: '校园卡|一卡通'
+    preferred_sources: [网络信息中心]
+    questions:
+      - {id: card_apply, question: 校园卡如何申领}
+      - {id: card_loss, question: 校园卡丢失如何挂失}
+      - {id: card_replace, question: 校园卡如何补办}
+      - {id: card_topup, question: 校园卡如何充值圈存}
+      - {id: card_payment, question: 校园卡支持哪些支付方式}
+      - {id: card_password, question: 校园卡密码忘记了怎么办}
+      - {id: card_fault, question: 校园卡无法使用如何处理}
+      - {id: card_location, question: 各校区卡务中心在哪里如何联系}
+      - {id: card_unloss, question: 找回已挂失校园卡如何解挂}

@@ -1,0 +1,841 @@
+version: 1
+school_id: whut
+as_of: '2026-09-05'
+cases:
+- id: transfer_time
+  topic: transfer_major
+  question: 转专业什么时候申请
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_899be15f209abb377b6c065741fe
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_eligibility
+  topic: transfer_major
+  question: 转专业申请条件是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_899be15f209abb377b6c065741fe
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_21630803d0632eac070aa6dbb7c4
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_exclusions
+  topic: transfer_major
+  question: 哪些学生不能转专业
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_cross_college
+  topic: transfer_major
+  question: 可以跨学院转专业吗
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_times
+  topic: transfer_major
+  question: 在校期间可以转几次专业
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_21630803d0632eac070aa6dbb7c4
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_exam
+  topic: transfer_major
+  question: 转专业笔试面试怎么安排
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_899be15f209abb377b6c065741fe
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_21630803d0632eac070aa6dbb7c4
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_results
+  topic: transfer_major
+  question: 转专业结果什么时候公布
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_credit
+  topic: transfer_major
+  question: 转专业后学分如何认定
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_materials
+  topic: transfer_major
+  question: 转专业需要提交什么材料
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_899be15f209abb377b6c065741fe
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_5e98121cb85356785d6a5564587f
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: transfer_capacity
+  topic: transfer_major
+  question: 转专业各专业接收名额是多少
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b6d6380f3889cd4f8ef67cf379e8
+  - whq_899be15f209abb377b6c065741fe
+  - whq_8bff28917f095e210c8c40acfe59
+  - whq_21630803d0632eac070aa6dbb7c4
+  - whq_1fac23c4c47d4e6d41d07af1502f
+  - whq_a556ca28a74581dafc86392c15e4
+  - whq_ca837e1a4045dbe6c3f171f6bb32
+  - whq_aac1cc56ba280ee49b89c4078e45
+  - whq_dc19953a0fada3f6b4e05c8854ae
+  - whq_f274dde238761d374e9667e7a5e9
+  - whq_f40465b64b0f393eabe008ed0528
+  - whq_c836938363585bce88b32707b7e5
+  - whq_8f4e452a34c9b0f8605d854452a9
+  - whq_d94b52b5cbcfbbdde6976f87a85d
+  requires_citation: true
+- id: course_time
+  topic: course_selection
+  question: 当前学期选课什么时候开始
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  - wha_5b1900187dd6d0161e26076deed8480a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_system
+  topic: course_selection
+  question: 本科生选课系统入口是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_3be0bfff62d1ff81423c4e535001
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  - wha_5b1900187dd6d0161e26076deed8480a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_steps
+  topic: course_selection
+  question: 选课具体操作流程是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_3be0bfff62d1ff81423c4e535001
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  - whd_27be28c9d61ee7f4c44ea4732a58550a
+  - wha_5b1900187dd6d0161e26076deed8480a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_preselect
+  topic: course_selection
+  question: 课程预选与正式选课有什么区别
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  requires_citation: true
+- id: course_add_drop
+  topic: course_selection
+  question: 补退选什么时候进行
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_3be0bfff62d1ff81423c4e535001
+  - whd_27be28c9d61ee7f4c44ea4732a58550a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_pe
+  topic: course_selection
+  question: 体育课怎么选
+  expected_status: COVERED
+  expected_source_ids:
+  - wha_5b1900187dd6d0161e26076deed8480a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_general
+  topic: course_selection
+  question: 通识选修课需要修多少学分
+  expected_status: COVERED
+  expected_source_ids:
+  - wha_5b1900187dd6d0161e26076deed8480a
+  - wha_9d999103205869e0ebbe19c2cec49d83
+  requires_citation: true
+- id: course_cross_major
+  topic: course_selection
+  question: 如何跨专业选课
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  requires_citation: true
+- id: course_capacity
+  topic: course_selection
+  question: 选不上课或课程停开怎么办
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_3be0bfff62d1ff81423c4e535001
+  - whq_f39fbe43c7f8e4e1e554d8821b07
+  requires_citation: true
+- id: course_conflict
+  topic: course_selection
+  question: 选课时间冲突怎么办
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: course_credit_limit
+  topic: course_selection
+  question: 每学期选课学分上下限是多少
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: course_arrears
+  topic: course_selection
+  question: 欠学费会影响选课吗
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_3be0bfff62d1ff81423c4e535001
+  requires_citation: true
+- id: cet_time
+  topic: cet
+  question: 四六级什么时候报名
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  requires_citation: true
+- id: cet_eligibility
+  topic: cet
+  question: 四六级报名条件是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  - whq_99a88d93daf731c0a17247196adf
+  requires_citation: true
+- id: cet_portal
+  topic: cet
+  question: 四六级报名入口是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  - whq_c9734c2145fceec9e4fcfacfb22a
+  requires_citation: true
+- id: cet_fee
+  topic: cet
+  question: 四六级报名费用和缴费流程是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  requires_citation: true
+- id: cet_exam
+  topic: cet
+  question: 四六级考试时间是什么时候
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_99a88d93daf731c0a17247196adf
+  requires_citation: true
+- id: cet_ticket
+  topic: cet
+  question: 四六级准考证什么时候打印
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  - whq_99a88d93daf731c0a17247196adf
+  requires_citation: true
+- id: cet_score
+  topic: cet
+  question: 四六级成绩什么时候查询
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  - whq_99a88d93daf731c0a17247196adf
+  - whq_c9734c2145fceec9e4fcfacfb22a
+  requires_citation: true
+- id: cet_oral
+  topic: cet
+  question: 四六级口语考试如何报名
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  requires_citation: true
+- id: cet_late
+  topic: cet
+  question: 四六级错过报名还能补报吗
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  requires_citation: true
+- id: cet_score_report
+  topic: cet
+  question: 四六级电子成绩报告单怎么下载
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7f6da6db096ce6a3aaf47a73d279
+  - whq_99a88d93daf731c0a17247196adf
+  - whq_c9734c2145fceec9e4fcfacfb22a
+  requires_citation: true
+- id: exam_schedule
+  topic: exam
+  question: 期末考试安排在哪里查
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_be005167fd39bd63f6d1d658882d
+  - wha_86c117b908868cc240ccf30fbe69a106
+  requires_citation: true
+- id: exam_absence
+  topic: exam
+  question: 无故缺考有什么后果
+  expected_status: COVERED
+  expected_source_ids:
+  - wha_86c117b908868cc240ccf30fbe69a106
+  requires_citation: true
+- id: exam_recheck
+  topic: exam
+  question: 对考试成绩有异议如何申请复核
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: exam_gpa
+  topic: exam
+  question: 平均学分绩点如何计算
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: exam_id
+  topic: exam
+  question: 参加课程考试需要带什么证件
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_be005167fd39bd63f6d1d658882d
+  - wha_86c117b908868cc240ccf30fbe69a106
+  requires_citation: true
+- id: exam_late
+  topic: exam
+  question: 考试迟到多久不能进入考场
+  expected_status: COVERED
+  expected_source_ids:
+  - wha_86c117b908868cc240ccf30fbe69a106
+  requires_citation: true
+- id: makeup_eligibility
+  topic: makeup_retake
+  question: 挂科后哪些课程可以补考
+  expected_status: COVERED
+  expected_source_ids:
+  - whd_1169b1f4fcc4edfd3674983885966ea6
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: makeup_time
+  topic: makeup_retake
+  question: 开学补考什么时候进行
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f1c4d5e19615a6549fee6b93c260
+  - whd_1169b1f4fcc4edfd3674983885966ea6
+  requires_citation: true
+- id: makeup_score
+  topic: makeup_retake
+  question: 补考成绩怎样记载
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f1c4d5e19615a6549fee6b93c260
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: deferred_apply
+  topic: makeup_retake
+  question: 缓考怎么申请
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: deferred_materials
+  topic: makeup_retake
+  question: 缓考需要提交哪些证明材料
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: deferred_timing
+  topic: makeup_retake
+  question: 缓考获批后什么时候参加考试
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_f1c4d5e19615a6549fee6b93c260
+  - whd_1169b1f4fcc4edfd3674983885966ea6
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: retake_apply
+  topic: makeup_retake
+  question: 重修如何报名选课
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: retake_fee
+  topic: makeup_retake
+  question: 重修是否需要缴费
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: retake_exemption
+  topic: makeup_retake
+  question: 重修课程如何申请免听
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: retake_score
+  topic: makeup_retake
+  question: 重修成绩如何记载
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: reexam_distinction
+  topic: makeup_retake
+  question: 重考和补考重修分别适用于什么情况
+  expected_status: COVERED
+  expected_source_ids:
+  - whd_1169b1f4fcc4edfd3674983885966ea6
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_suspend
+  topic: student_status
+  question: 休学如何申请
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_resume
+  topic: student_status
+  question: 休学期满如何复学
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_retain
+  topic: student_status
+  question: 保留学籍有哪些规定
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_withdraw
+  topic: student_status
+  question: 退学有哪些情形和办理流程
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_extend
+  topic: student_status
+  question: 延长学习年限如何申请
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_early
+  topic: student_status
+  question: 提前毕业有哪些要求
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: status_transfer_school
+  topic: student_status
+  question: 转学有哪些条件和程序
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_graduate
+  topic: student_status
+  question: 毕业资格和学分要求是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_degree
+  topic: student_status
+  question: 本科学士学位授予条件是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: status_register
+  topic: student_status
+  question: 开学注册和请假有哪些规定
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_36b7d3c589fa21dcf2fc09aaaea4
+  requires_citation: true
+- id: scholarship_national
+  topic: scholarship
+  question: 本科生国家奖学金申请条件是什么
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: scholarship_inspirational
+  topic: scholarship
+  question: 国家励志奖学金申请条件是什么
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: scholarship_school
+  topic: scholarship
+  question: 学校奖学金评定条件是什么
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: scholarship_social
+  topic: scholarship
+  question: 社会奖学金如何申请
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: scholarship_time
+  topic: scholarship
+  question: 奖学金什么时候评审
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b5835ba77fa5de9e91ca568ba03e
+  requires_citation: true
+- id: scholarship_score
+  topic: scholarship
+  question: 奖学金对成绩和综测有什么要求
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b5835ba77fa5de9e91ca568ba03e
+  requires_citation: true
+- id: scholarship_materials
+  topic: scholarship
+  question: 奖学金申请需要什么材料
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b5835ba77fa5de9e91ca568ba03e
+  requires_citation: true
+- id: scholarship_publicity
+  topic: scholarship
+  question: 奖学金公示异议如何反映
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: scholarship_quota
+  topic: scholarship
+  question: 本年度奖学金名额怎样分配
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_b5835ba77fa5de9e91ca568ba03e
+  requires_citation: true
+- id: scholarship_multiple
+  topic: scholarship
+  question: 不同奖学金能否同时获得
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_formula
+  topic: comprehensive_evaluation
+  question: 本科生综测总分如何计算
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_moral
+  topic: comprehensive_evaluation
+  question: 综测德育分如何计算
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_academic
+  topic: comprehensive_evaluation
+  question: 综测智育分如何计算
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_sports
+  topic: comprehensive_evaluation
+  question: 综测体育分如何计算
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_competition
+  topic: comprehensive_evaluation
+  question: 学科竞赛获奖如何加分
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7749c8a6f1de899abed744169be9
+  requires_citation: true
+- id: evaluation_cadre
+  topic: comprehensive_evaluation
+  question: 学生干部工作如何加分
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_volunteer
+  topic: comprehensive_evaluation
+  question: 志愿服务和社会实践如何加分
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_research
+  topic: comprehensive_evaluation
+  question: 科研论文和专利如何加分
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: evaluation_penalty
+  topic: comprehensive_evaluation
+  question: 违纪处分如何影响综测
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7749c8a6f1de899abed744169be9
+  requires_citation: true
+- id: evaluation_appeal
+  topic: comprehensive_evaluation
+  question: 对综测结果有异议如何申诉
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_7749c8a6f1de899abed744169be9
+  requires_citation: true
+- id: calendar_download
+  topic: academic_calendar
+  question: 当前学期官方校历在哪里下载
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: calendar_start
+  topic: academic_calendar
+  question: 当前学期开学上课时间是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_a66e808cb3a73053885d27db9a95
+  - whd_3cb978d4a9557f6f9bfb46d5e8daafc9
+  requires_citation: true
+- id: calendar_winter
+  topic: academic_calendar
+  question: 寒假什么时候开始
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_a66e808cb3a73053885d27db9a95
+  requires_citation: true
+- id: calendar_summer
+  topic: academic_calendar
+  question: 暑假什么时候开始
+  expected_status: COVERED
+  expected_source_ids:
+  - whd_3cb978d4a9557f6f9bfb46d5e8daafc9
+  requires_citation: true
+- id: calendar_weeks
+  topic: academic_calendar
+  question: 本学期教学周和考试周如何安排
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: calendar_holiday
+  topic: academic_calendar
+  question: 国庆节放假和调休如何安排
+  expected_status: GAP_REVIEW
+  expected_source_ids: []
+  requires_citation: true
+- id: library_hours
+  topic: library
+  question: 各校区图书馆开闭馆时间是什么
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_438e30dcb37d71e0df850f5f3669
+  requires_citation: true
+- id: library_borrow
+  topic: library
+  question: 本科生可以借多少本书借多久
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_bb3662b7cb41f4de1c5907af7093
+  requires_citation: true
+- id: library_renew
+  topic: library
+  question: 图书如何续借
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_bb3662b7cb41f4de1c5907af7093
+  requires_citation: true
+- id: library_overdue
+  topic: library
+  question: 图书逾期或丢失如何处理
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_bb3662b7cb41f4de1c5907af7093
+  requires_citation: true
+- id: library_seat
+  topic: library
+  question: 图书馆座位如何预约
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_ab01073c4263298ae4f61e661a7b
+  requires_citation: true
+- id: library_room
+  topic: library
+  question: 图书馆研讨室如何预约
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_ab01073c4263298ae4f61e661a7b
+  requires_citation: true
+- id: library_database
+  topic: library
+  question: 如何访问图书馆电子数据库
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_438e30dcb37d71e0df850f5f3669
+  - whq_0ea9b88b4a47fa89bb5c0cdc461d
+  - whq_bb3662b7cb41f4de1c5907af7093
+  requires_citation: true
+- id: library_remote
+  topic: library
+  question: 校外如何访问图书馆资源
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_0ea9b88b4a47fa89bb5c0cdc461d
+  requires_citation: true
+- id: library_entry
+  topic: library
+  question: 入馆需要什么证件有哪些规则
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_df5981cfec94a11117e3189b9f4c
+  requires_citation: true
+- id: card_apply
+  topic: campus_card
+  question: 校园卡如何申领
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_loss
+  topic: campus_card
+  question: 校园卡丢失如何挂失
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_replace
+  topic: campus_card
+  question: 校园卡如何补办
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_topup
+  topic: campus_card
+  question: 校园卡如何充值圈存
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_payment
+  topic: campus_card
+  question: 校园卡支持哪些支付方式
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_password
+  topic: campus_card
+  question: 校园卡密码忘记了怎么办
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  requires_citation: true
+- id: card_fault
+  topic: campus_card
+  question: 校园卡无法使用如何处理
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_location
+  topic: campus_card
+  question: 各校区卡务中心在哪里如何联系
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  - wha_b6cdda3298f194534c2b5ea39f89d533
+  requires_citation: true
+- id: card_unloss
+  topic: campus_card
+  question: 找回已挂失校园卡如何解挂
+  expected_status: COVERED
+  expected_source_ids:
+  - whq_063f26214ac80e25ec57fbe48f8d
+  requires_citation: true

@@ -126,8 +126,8 @@ sources:
     discovered_from: homepage
 
   - source_key: i
-    name: 网络信息中心
-    department: 网络信息中心
+    name: 武汉理工大学综合信息网
+    department: 学校综合信息发布平台
     base_url: https://i.whut.edu.cn/
     domains: [i.whut.edu.cn]
     authority_type: OFFICIAL_DEPARTMENT
@@ -163,8 +163,8 @@ sources:
 
   # ---------------- P2：学院与低信号站点 ----------------
   - source_key: sie
-    name: 信息工程学院
-    department: 信息工程学院
+    name: 国际教育学院
+    department: 国际教育学院
     base_url: https://sie.whut.edu.cn/
     domains: [sie.whut.edu.cn]
     authority_type: OFFICIAL_COLLEGE
