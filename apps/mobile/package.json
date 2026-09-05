@@ -46,7 +46,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/features/timetable src/app/navigation/RootNavigator.tsx src/app/providers/AppProviders.tsx src/screens/Home/HomeScreen.tsx src/types/navigation.ts tests scripts/build-timetable-browser.mjs --max-warnings 0",
     "lint:all": "eslint src App.tsx index.ts --max-warnings 0",
-    "test": "node scripts/build-timetable-browser.mjs --check && tsx --test tests/*.test.ts",
+    "test": "node scripts/build-timetable-browser.mjs --check && tsx --test tests/timetable-bridge.test.ts tests/timetable-lifecycle.test.ts tests/timetable.test.ts",
     "timetable:bundle": "node scripts/build-timetable-browser.mjs",
     "doctor": "npx expo-doctor",
     "export:android": "expo export --platform android --output-dir dist/android-bundle",

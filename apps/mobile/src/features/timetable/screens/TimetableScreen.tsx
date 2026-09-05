@@ -14,13 +14,13 @@ import { WeekNavigator } from '../components/WeekNavigator';
 import { belongsToWeek, type Course } from '../domain/course';
 import { formatLastImported, getCurrentAcademicWeek, getSchoolDate, getWeekDates } from '../domain/date';
 import { CourseImportError, type CourseProvider } from '../providers/course-provider';
-import { createTimetableProviders, getProviderLabel } from '../providers/registry';
+import { createTimetableProvider, getProviderLabel } from '../providers/registry';
 import { useTimetableStore } from '../store/timetable-store';
 
 export function TimetableScreen() {
   const { timetable, loading, error: storageError, save, clear } = useTimetableStore();
   const { browser, browserNode } = useCourseBrowser();
-  const providers = createTimetableProviders(browser);
+  const provider = createTimetableProvider(browser);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [now, setNow] = useState(() => new Date());
@@ -90,12 +90,9 @@ export function TimetableScreen() {
             <View style={styles.center}>
               <Ionicons name="calendar-outline" size={32} color={colors.accent} />
               <Text accessibilityRole="header" style={styles.emptyTitle}>还没有课表</Text>
-              <Text style={styles.emptyText}>{schoolAdapter.timetable.enabled ? `从${schoolAdapter.timetable.label}\n导入本学期本科课表` : '本校暂未配置课表导入，可先体验演示课表'}</Text>
-              <Pressable accessibilityRole="button" disabled={busy || !schoolAdapter.timetable.enabled} onPress={() => void importCourses(providers.primary)} style={styles.primary}>
+              <Text style={styles.emptyText}>{schoolAdapter.timetable.enabled ? `从${schoolAdapter.timetable.label}\n导入本学期本科课表` : '本校暂未配置课表导入'}</Text>
+              <Pressable accessibilityRole="button" disabled={busy || !schoolAdapter.timetable.enabled} onPress={() => void importCourses(provider)} style={styles.primary}>
                 <Text style={styles.primaryText}>{busy ? '正在导入…' : '导入课表'}</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" disabled={busy} onPress={() => void importCourses(providers.mock)} style={styles.demoButton}>
-                <Text style={styles.demoText}>先体验演示课表</Text>
               </Pressable>
               <Text style={styles.privacy}>学校页面登录 · 课表仅保存在本机</Text>
             </View>
@@ -107,14 +104,13 @@ export function TimetableScreen() {
                   <Text style={styles.term}>学期 {timetable.termCode}</Text>
                   <Text style={styles.updated}>最后更新：{formatLastImported(timetable.lastImportedAt, timetable.timezone, now)}</Text>
                 </View>
-                <Pressable accessibilityRole="button" accessibilityLabel="重新导入课表" disabled={busy || !schoolAdapter.timetable.enabled} onPress={() => void importCourses(providers.primary)} style={styles.refresh}>
+                <Pressable accessibilityRole="button" accessibilityLabel="重新导入课表" disabled={busy || !schoolAdapter.timetable.enabled} onPress={() => void importCourses(provider)} style={styles.refresh}>
                   <Ionicons name="refresh-outline" color={colors.accent} size={16} /><Text style={styles.refreshText}>{busy ? '导入中' : '重新导入'}</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" accessibilityLabel="清除本地课表" disabled={busy} onPress={() => setConfirmClear(true)} style={styles.delete}>
                   <Ionicons name="trash-outline" size={16} color={colors.textMuted} />
                 </Pressable>
               </View>
-              {timetable.provider === 'mock' && <Text style={styles.demoNotice}>演示数据 · 不代表真实课程安排</Text>}
               <WeekNavigator week={week} currentWeek={currentWeek} maxWeek={maxWeek} dates={getWeekDates(timetable.termStartDate, week)} onChange={setSelectedWeek} onToday={() => setSelectedWeek(null)} />
               <WeekHeader dates={getWeekDates(timetable.termStartDate, week)} today={getSchoolDate(now, timetable.timezone)} />
               <TimetableGrid courses={timetable.courses.filter((course) => belongsToWeek(course, week))} onCoursePress={setSelectedCourse} onSwipe={swipe} />
@@ -131,7 +127,7 @@ export function TimetableScreen() {
             <Text style={styles.confirmTitle}>清除本地课表？</Text>
             <Text style={styles.confirmText}>仅删除本机缓存，不影响学校数据。之后可重新登录导入。</Text>
             <Pressable accessibilityRole="button" onPress={() => void clearCourses()} style={styles.primary}><Text style={styles.primaryText}>确认清除</Text></Pressable>
-            <Pressable accessibilityRole="button" onPress={() => setConfirmClear(false)} style={styles.demoButton}><Text style={styles.demoText}>取消</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={() => setConfirmClear(false)} style={styles.secondaryButton}><Text style={styles.secondaryText}>取消</Text></Pressable>
           </View>
         </View>
       </Modal>
@@ -145,8 +141,8 @@ const styles = StyleSheet.create({
   emptyText: { color: colors.textSecondary, fontSize: 15, lineHeight: 25, textAlign: 'center', marginTop: 12, marginBottom: 28 },
   primary: { minWidth: 180, minHeight: 48, borderRadius: 8, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   primaryText: { color: colors.white, fontSize: 15, fontWeight: '600' },
-  demoButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  demoText: { color: colors.textSecondary, fontSize: 13 },
+  secondaryButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  secondaryText: { color: colors.textSecondary, fontSize: 13 },
   privacy: { color: colors.textMuted, fontSize: 11, marginTop: 36 },
   toolbar: { flexDirection: 'row', alignItems: 'center', paddingLeft: 20, paddingRight: 8, paddingVertical: 8, gap: 4 },
   meta: { flex: 1 },
@@ -156,7 +152,6 @@ const styles = StyleSheet.create({
   refresh: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 6 },
   refreshText: { fontSize: 12, color: colors.accent },
   delete: { width: 40, height: 44, alignItems: 'center', justifyContent: 'center' },
-  demoNotice: { backgroundColor: colors.warningSoft, color: '#8A560F', paddingVertical: 6, textAlign: 'center', fontSize: 11 },
   notice: { paddingHorizontal: 20, paddingVertical: 8, color: colors.success, fontSize: 12 },
   error: { margin: 12, padding: 12, backgroundColor: colors.dangerSoft, borderRadius: 8 },
   errorText: { fontSize: 13, color: colors.danger },

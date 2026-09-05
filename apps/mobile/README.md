@@ -1,6 +1,6 @@
 # AskU APP Architecture V0.9
 
-React Native / Expo / TypeScript 移动端。默认通过 `ApiChatService` 连接 AskU Go Backend，真实持久化会话并消费可重连 SSE；`MockChatService` 仅保留为离线 UI 回归模式。
+React Native / Expo / TypeScript 移动端。通过 `ApiChatService` 连接 AskU Go Backend，持久化真实会话并消费可重连 SSE。运行时不提供 Mock 问答模式。
 
 ## How to Run
 
@@ -19,11 +19,7 @@ npm start
 
 先按仓库根目录说明启动 PostgreSQL、Redis 和 Backend。Android 模拟器默认访问 `http://10.0.2.2:18080`；iOS 模拟器默认访问 `http://127.0.0.1:18080`。
 
-真机需复制 `.env.example` 为 `.env.local`，把 `EXPO_PUBLIC_ASKU_API_BASE_URL` 改为开发电脑局域网地址后重新构建。临时回退本地 Mock：
-
-```text
-EXPO_PUBLIC_ASKU_SERVICE_MODE=mock
-```
+真机需复制 `.env.example` 为 `.env.local`，把 `EXPO_PUBLIC_ASKU_API_BASE_URL` 改为开发电脑局域网地址后重新构建。
 
 在 Expo Dev Server 中扫码，或按 `a` / `i` 打开 Android / iOS 模拟器。
 
@@ -87,7 +83,6 @@ src/
 ├── hooks/          # Screen Controller 与异步用例编排
 ├── services/       # Product Port、API Adapter、Token 生命周期
 ├── config/         # 校验后的运行配置
-├── mocks/          # Normal、Multi-source、No-source、Long、Error 数据
 ├── store/          # 轻量跨页面状态
 ├── theme/          # Colors / Spacing / Typography / Radius / Shadows / Motion
 ├── types/          # User、Session、Message、Source、ChatEvent 等契约
@@ -104,7 +99,6 @@ UI 只依赖 `ChatService` 与标准 `ChatEvent`。当前实现：
 - `ApiChatService`：REST、SSE 解析、event id 去重、断线续传、取消。
 - `ApiSessionManager`：Token 恢复、自动轮换、并发 401 单飞恢复。
 - `ApiAuthService`：用户身份读取边界。
-- `MockChatService`：设置 `EXPO_PUBLIC_ASKU_SERVICE_MODE=mock` 后启用。
 
 后续接入真实 Agent 时只替换后端能力 Adapter，不需要重写 Screen。详细边界见 `../../docs/frontend-architecture.md`。
 
@@ -129,7 +123,7 @@ npm run export:ios
 
 ## 课表
 
-首页「课表」进入独立页面，不增加底部 Tab。支持武汉理工本科官方 WebView 登录导入、周次/日期浏览、冲突课程详情、重新导入与本地离线缓存。空状态可选择「先体验演示课表」，演示数据会明确标记，可用于完整离线 UI 验证。
+首页「课表」进入独立页面，不增加底部 Tab。支持武汉理工本科官方 WebView 登录导入、周次/日期浏览、冲突课程详情、重新导入与本地离线缓存。应用会在启动时删除旧版本遗留的演示课表缓存。
 
 首次加入 `react-native-webview` / `expo-crypto` 后，需要重新构建原生 App；仅重启 Metro 不会更新旧安装包的原生模块。Web 版可验证课表 UI，但不提供学校 WebView 登录。
 

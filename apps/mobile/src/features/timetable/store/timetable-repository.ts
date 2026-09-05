@@ -17,11 +17,17 @@ export class TimetableRepository {
     const raw = await this.storage.getItem(TIMETABLE_STORAGE_KEY);
     if (raw === null) return null;
     if (raw.length > MAX_CACHE_LENGTH) throw new Error('Invalid timetable cache');
-    return timetableSchema.parse(JSON.parse(raw));
+    const value = timetableSchema.parse(JSON.parse(raw));
+    if (value.provider === 'mock' || value.schoolId === 'demo') {
+      await this.storage.removeItem(TIMETABLE_STORAGE_KEY);
+      return null;
+    }
+    return value;
   }
 
   async save(value: Timetable): Promise<Timetable> {
     const safe = timetableSchema.parse(value);
+    if (safe.provider === 'mock' || safe.schoolId === 'demo') throw new Error('Demo timetable data is not accepted');
     const serialized = JSON.stringify(safe);
     if (serialized.length > MAX_CACHE_LENGTH) throw new Error('Timetable cache exceeds size limit');
     await this.storage.setItem(TIMETABLE_STORAGE_KEY, serialized);

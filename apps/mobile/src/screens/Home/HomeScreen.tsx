@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, useWindo
 
 import { QuestionComposer } from '../../components/common/QuestionComposer';
 import { Screen } from '../../components/common/Screen';
-import { frequentlyAskedQuestions } from '../../mocks/scenarios';
+import { suggestedQuestions } from '../../config/suggestedQuestions';
 import { keyboardAvoidingBehavior } from '../../platform/keyboard';
 import { colors, layout, radius, spacing, typography } from '../../theme';
 import type { RootStackParamList } from '../../types/navigation';
@@ -76,7 +76,7 @@ export function HomeScreen() {
           <View style={styles.faqSection}>
             <Text style={styles.sectionTitle}>常问问题</Text>
             <View style={styles.questions}>
-              {frequentlyAskedQuestions.map((item) => (
+              {suggestedQuestions.map((item) => (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`提问：${item}`}

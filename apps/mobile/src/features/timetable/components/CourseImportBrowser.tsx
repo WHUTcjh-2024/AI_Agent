@@ -86,7 +86,7 @@ function CourseImportBrowser({ request, onFinish }: { request: BrowserImportRequ
         <Text style={styles.notice}>请使用学校统一身份认证登录。{ '\n' }登录信息由学校页面处理，AskU 不保存密码。</Text>
         {blocked && <Text accessibilityRole="alert" style={styles.warning}>已阻止外部跳转，请在当前学校页面完成登录。</Text>}
         {Platform.OS === 'web' ? (
-          <View style={styles.center}><Text style={styles.notice}>学校登录仅支持 Android / iOS。请使用真机打开 AskU；网页可体验演示课表。</Text></View>
+          <View style={styles.center}><Text style={styles.notice}>学校登录仅支持 Android / iOS，请使用真机打开 AskU 导入课表。</Text></View>
         ) : (
           <View style={styles.flex}>
             <WebView

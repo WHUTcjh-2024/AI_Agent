@@ -4,7 +4,6 @@ import { test } from 'node:test';
 import { belongsToWeek, courseSchema, formatWeeks, getCourseColor, layoutDay, type Course } from '../src/features/timetable/domain/course';
 import { addDays, formatDateRange, formatLastImported, getCurrentAcademicWeek, getSchoolDate, getWeekDates, getWeekday, isCalendarDate } from '../src/features/timetable/domain/date';
 import { timetableSchema } from '../src/features/timetable/domain/timetable';
-import { MockCourseProvider } from '../src/features/timetable/providers/mock-course-provider';
 import { normalizeJwappCourses, parseWeekBitmap, parseJwappCurrentUser } from '../src/features/timetable/providers/jwapp/jwapp-parser';
 import { TimetableRepository, TIMETABLE_STORAGE_KEY } from '../src/features/timetable/store/timetable-repository';
 
@@ -133,21 +132,12 @@ test('conflict layout preserves both courses and never overlaps within a lane', 
   assert.deepEqual(result.map((item) => [item.lane, item.laneCount]), [[0, 2], [1, 2], [0, 2], [0, 1]]);
   assert.equal(result.length, courses.length);
 });
-test('mock includes five requested subjects, weekends, conflicts and missing optional data', async () => {
-  const result = await new MockCourseProvider().importCourses();
-  assert.ok(timetableSchema.safeParse(result).success);
-  for (const name of ['大学物理', '高等数学', '大学英语', '信号与系统', '体育']) assert.ok(result.courses.some((item) => item.name === name));
-  assert.ok(result.courses.some((item) => item.weekday === 6)); assert.ok(result.courses.some((item) => item.weekday === 7));
-  assert.ok(result.courses.some((item) => !item.teacher)); assert.ok(result.courses.some((item) => !item.room));
-  const controller = new AbortController(); controller.abort();
-  await assert.rejects(new MockCourseProvider().importCourses(controller.signal));
-});
 test('repository survives reopen, clears only its own key, and strips unknown values', async () => {
   const map = new Map<string, string>([['unrelated', 'keep']]);
   const storage = { getItem: async (key: string) => map.get(key) ?? null, setItem: async (key: string, value: string) => { map.set(key, value); }, removeItem: async (key: string) => { map.delete(key); } };
   const first = new TimetableRepository(storage);
   assert.equal(await first.load(), null);
-  const data = await new MockCourseProvider().importCourses();
+  const data = normalize([row]);
   await first.save(data);
   assert.deepEqual(await new TimetableRepository(storage).load(), data);
   assert.ok(map.has(TIMETABLE_STORAGE_KEY));
@@ -156,9 +146,26 @@ test('repository survives reopen, clears only its own key, and strips unknown va
 test('corrupt storage fails safely, failed refresh retains old disk data', async () => {
   let value = JSON.stringify(normalize([row]));
   const repository = new TimetableRepository({ getItem: async () => value, setItem: async () => { throw new Error('disk full'); }, removeItem: async () => {} });
-  await assert.rejects(repository.save(await new MockCourseProvider().importCourses()));
+  await assert.rejects(repository.save(normalize([{ ...row, KCM: '另一门课' }])));
   assert.equal((await repository.load())?.courses[0].name, '大学物理');
   value = '{broken'; await assert.rejects(repository.load());
+});
+
+test('repository removes legacy demo timetable data during hydration', async () => {
+  const base = normalize([row]);
+  const demo = { ...base, schoolId: 'demo', provider: 'mock', courses: base.courses.map((item) => ({
+    ...item,
+    source: { schoolId: 'demo', provider: 'mock' },
+  })) };
+  let value: string | null = JSON.stringify(demo);
+  const repository = new TimetableRepository({
+    getItem: async () => value,
+    setItem: async (_, next) => { value = next; },
+    removeItem: async () => { value = null; },
+  });
+  assert.equal(await repository.load(), null);
+  assert.equal(value, null);
+  await assert.rejects(repository.save(demo), /Demo timetable data is not accepted/);
 });
 
 test('required real-world arrangements preserve every exact teaching week', () => {

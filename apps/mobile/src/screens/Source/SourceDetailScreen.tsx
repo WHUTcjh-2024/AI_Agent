@@ -82,7 +82,7 @@ export function SourceDetailScreen() {
               {(source.evidence ?? []).map((excerpt, index) => <Text key={`${index}-${excerpt.slice(0, 16)}`} style={styles.evidence}>“{excerpt}”</Text>)}
             </View>
           ) : null}
-          <Text style={styles.mockNote}>摘要用于快速确认来源，具体内容请以学校原文为准。</Text>
+          <Text style={styles.sourceNote}>摘要用于快速确认来源，具体内容请以学校原文为准。</Text>
         </View>
 
         {(source.attachments ?? []).length ? (
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   evidenceBox: { marginTop: spacing[5], padding: spacing[4], backgroundColor: colors.surfaceMuted, borderRadius: radius.md, gap: spacing[2] },
   evidenceLabel: { ...typography.metadata, color: colors.textSecondary, fontWeight: '700' },
   evidence: { ...typography.caption, color: colors.textPrimary },
-  mockNote: { ...typography.metadata, color: colors.textMuted, marginTop: spacing[4] },
+  sourceNote: { ...typography.metadata, color: colors.textMuted, marginTop: spacing[4] },
   attachmentsSection: { marginTop: spacing[8], gap: spacing[2] },
   attachmentButton: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingHorizontal: spacing[4], borderWidth: StyleSheet.hairlineWidth, borderColor: colors.borderStrong, borderRadius: radius.md },
   attachmentText: { ...typography.caption, color: colors.textPrimary, fontWeight: '600', flex: 1 },

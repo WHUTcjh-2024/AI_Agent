@@ -23,12 +23,12 @@ export function ProfileScreen() {
     return () => { active = false; };
   }, [auth]);
 
-  const mockAlert = (title: string, message: string) => Alert.alert(title, message, [{ text: '知道了' }]);
+  const showInfo = (title: string, message: string) => Alert.alert(title, message, [{ text: '知道了' }]);
   const items: MenuItem[] = [
-    { icon: 'time-outline', label: '历史记录', description: '在底部“历史”中查看', action: () => mockAlert('历史记录', '请使用底部导航进入历史对话。') },
-    { icon: 'chatbox-ellipses-outline', label: '意见反馈', action: () => mockAlert('意见反馈', '感谢关注。正式反馈入口将在后续版本接入。') },
-    { icon: 'information-circle-outline', label: '关于 AskU', action: () => mockAlert('AskU', `${user?.schoolName ?? "本校"}校园 AI 信息助手\n架构优化版 V${runtimeConfig.version}`) },
-    { icon: 'settings-outline', label: '设置', action: () => mockAlert('设置', '当前版本已连接 AskU 开发后端，使用浅色主题。') },
+    { icon: 'time-outline', label: '历史记录', description: '在底部“历史”中查看', action: () => showInfo('历史记录', '请使用底部导航进入历史对话。') },
+    { icon: 'chatbox-ellipses-outline', label: '意见反馈', action: () => showInfo('意见反馈', '感谢关注。正式反馈入口将在后续版本接入。') },
+    { icon: 'information-circle-outline', label: '关于 AskU', action: () => showInfo('AskU', `${user?.schoolName ?? "本校"}校园 AI 信息助手\n架构优化版 V${runtimeConfig.version}`) },
+    { icon: 'settings-outline', label: '设置', action: () => showInfo('设置', '当前版本已连接 AskU 开发后端，使用浅色主题。') },
   ];
 
   return (
@@ -41,7 +41,7 @@ export function ProfileScreen() {
             <Text style={styles.name}>{user?.nickname ?? (userError ? '登录状态不可用' : '正在加载')}</Text>
             <Text style={styles.school}>{user?.schoolName ?? '正在加载学校'}</Text>
           </View>
-          <View style={styles.mockBadge}><Text style={styles.mockText}>{runtimeConfig.authMode === 'dev' ? '开发登录' : '微信登录'}</Text></View>
+          <View style={styles.authBadge}><Text style={styles.authText}>{runtimeConfig.authMode === 'dev' ? '开发登录' : '微信登录'}</Text></View>
         </View>
 
         <View style={styles.menu}>
@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
   profileText: { flex: 1, gap: 3 },
   name: { ...typography.heading, color: colors.textPrimary },
   school: { ...typography.caption, color: colors.textSecondary },
-  mockBadge: { backgroundColor: colors.surfaceMuted, borderRadius: radius.pill, paddingHorizontal: spacing[3], paddingVertical: spacing[2] },
-  mockText: { ...typography.metadata, color: colors.textSecondary },
+  authBadge: { backgroundColor: colors.surfaceMuted, borderRadius: radius.pill, paddingHorizontal: spacing[3], paddingVertical: spacing[2] },
+  authText: { ...typography.metadata, color: colors.textSecondary },
   menu: { borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
   menuItem: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3] },
   menuBorder: { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
