@@ -20,7 +20,8 @@ from .question_crawl import EXTENSIONS, canonical, digest, read_jsonl, transport
 
 MAIN_SELECTORS = ['#editor1', '#bfArticleContent', '.TRS_Editor', '.TRS_UEDITOR', '#vsb_content_2',
                   '#vsb_content', '.v_news_content', '.article_content', '.news-content', '.article-content',
-                  '.newsDetail', '.news_detail', '.detail-content', '.content-detail', '.detail_con']
+                  '.newsDetail', '.news_detail', '.detail-content', '.content-detail', '.detail_con',
+                  '.guide-section']
 DATE_RE = re.compile(r'(20\d{2})\s*[-年/.]\s*(\d{1,2})\s*[-月/.]\s*(\d{1,2})')
 COLLEGES = {'wutinfo': '信息工程学院', 'sa': '自动化学院', 'som': '管理学院', 'econ': '经济学院',
             'smse': '材料科学与工程学院', 'smee': '机电工程学院', 'sn': '航运学院',
@@ -32,7 +33,7 @@ COLLEGES = {'wutinfo': '信息工程学院', 'sa': '自动化学院', 'som': '�
 DEPARTMENTS = {'jwc': '本科生院', 'nic': '网络信息中心', 'stuplaza': '学生工作部',
                'dzb': '党政办公室', 'lib': '图书馆', 'zs': '本科生招生办公室',
                'xxgk': '信息公开网', 'www': '武汉理工大学', 'youth': '校团委', 'jcc': '财务处',
-               'gd': '研究生院', 'hp': '校医院'}
+               'gd': '研究生院', 'hp': '校医院', 'welcome': '迎新网站'}
 RESULT_RE = re.compile(r'名单|录取结果|转专业结果|评选结果|拟录取|获奖.{0,4}公示|等\d+名学生')
 FORM_RE = re.compile(r'申请表|审批表|登记表|汇总表|承诺书|申请单|模板')
 
@@ -114,7 +115,8 @@ def parse_html(data: bytes, url: str, hint: str = '') -> dict:
     soup = BeautifulSoup(html, 'lxml')
     title = normalize_title(_extract_title(soup))
     if not title or title.endswith(('欢迎您', '欢迎您！', '学工部（处） 武装部')) or title in {
-            '武汉理工大学本科生院', '武汉理工大学图书馆', '武汉理工大学党委学工部（处） 武装部'}:
+            '武汉理工大学本科生院', '武汉理工大学图书馆', '武汉理工大学党委学工部（处） 武装部',
+            '欢迎来到 武汉理工大学'}:
         title = normalize_title(hint)
     container = None
     selector = None

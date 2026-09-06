@@ -38,6 +38,7 @@ __pycache__/
 asku-knowledge/data/
 asku-knowledge/exports/
 asku-knowledge/reports/
+/AskU_WHUT_*_*.zip
 
 # Local QA captures and temporary files.
 tmp/

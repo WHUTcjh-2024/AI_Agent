@@ -8,7 +8,7 @@
 - `infrastructure/docker`：本地 PostgreSQL / Redis
 - `docs`：架构与开发说明
 
-当前版本为 Architecture V0.11 / Router Robustness + School Portability：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题只走知识库。武汉理工大学 Question-First 知识库已完成首批 39 篇清洗文档导入，运行环境已接通 WeKnora、SearXNG 和 OpenAI-compatible 模型池。
+当前版本为 Architecture V0.11 / Router Robustness + School Portability：时效问题由 Agent 并行组合学校知识库与官方网页，稳定问题只走知识库。武汉理工大学 Question-First 知识库现有 52 篇已清洗、已审核文档，其中 Gold V2 新增 13 篇；运行环境已接通 WeKnora、SearXNG 和 OpenAI-compatible 模型池。
 
 ## 启动联调环境
 
@@ -24,9 +24,9 @@ Compose 会同时启动 Backend、PostgreSQL 和 Redis。仅 Backend 的 `18080`
 
 ## 后续开发
 
-首批知识数据已通过准入并导入当前 WeKnora 知识库，严格高频问题覆盖率为 83/103（80.6%）。下一步补齐奖学金、综合测评和校历等缺口，执行真实知识质量评测，并完成微信登录、安全凭证存储和正式试点部署。历史计划与验收条件见[数据准备期间的后续开发计划](docs/next-steps-data-pending.md)。
+知识数据已通过准入并导入当前 WeKnora 知识库：52/52 篇处于 `completed + enabled`，AskU Catalog 映射为 52/52。既有严格高频题基线为 83/103（80.6%）；Gold V2 的 100 条评测题中已有 12 条完成证据核验，剩余 88 条仍需人工复核，不能直接作为准确率结论。导入与验收证据见 [Gold V2 导入验收报告](docs/gold-v2-import-20260906.md)。
 
-在仓库根目录运行 `./scripts/eval.ps1`，可自动启动独立评测依赖并执行 34 项工程检查，输出 JSON/Markdown 报告；3 个真实知识问题单独标记为 `blocked_data`。使用方式见[工程评测](evals/README.md)，实现边界与联调修复见 [Phase 13A](docs/phase-13a-engineering-evaluation.md)。
+在仓库根目录运行 `./scripts/eval.ps1`，可自动启动独立评测依赖并执行 39 项工程检查，输出 JSON/Markdown 报告；3 个真实知识问题单独标记为 `blocked_data`。使用方式见[工程评测](evals/README.md)，实现边界与联调修复见 [Phase 13A](docs/phase-13a-engineering-evaluation.md)。
 
 Admin 启动与凭证配置见 [控制台说明](apps/admin/README.md)。[Phase 10B](docs/phase-10b-admin-console.md) 提供隔离环境启动和 `scripts/admin-smoke.ps1` 联调流程；GitHub CI 自动验证问答完成后控制台统计更新。
 

@@ -38,7 +38,7 @@ forbidden_path_patterns:
 # 知识库标识（§24：第一版一个官方知识库）
 official_knowledge_base_id: "3b417275-d2b5-403d-a1d8-b00b1b572db6"
 community_knowledge_base_id: ""
-knowledge_version: "v20260905-question-first"
+knowledge_version: "v20260906-gold-v2"
 
 # 学历层次与受众
 education_levels:

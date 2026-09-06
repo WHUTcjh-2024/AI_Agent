@@ -107,6 +107,9 @@ secondary_topics:
   innovation_project:       # 大创
     primary_module: INNOVATION
     priority: P1
+  extracurricular_credit:  # 第二课堂课外学分
+    primary_module: UNDERGRAD_ACADEMIC
+    priority: P1
   career_procedure:         # 就业手续
     primary_module: CAREER
     priority: P1
@@ -305,6 +308,10 @@ topic_keywords:
     - 大创
     - 创新创业训练
     - 大学生创新创业
+  extracurricular_credit:
+    - 第二课堂
+    - 课外学分
+    - 课外培养学分
   career_procedure:
     - 就业
     - 三方协议
