@@ -75,7 +75,7 @@ ASKU_LLM_OUTPUT_RMB_PER_MTOK=<output price>
 
 ## Web Search Gateway
 
-输入 `官网搜索测试` 可走完整搜索联调链路。详细边界、配置和测试见 `docs/phase-6-web-search-gateway.md`。
+输入 `官网搜索测试` 可走完整搜索联调链路。
 
 ## WeKnora Knowledge Adapter
 
@@ -89,7 +89,7 @@ ASKU_WEKNORA_TIMEOUT=12s
 ASKU_KNOWLEDGE_TOP_N=4
 ```
 
-每所学校的知识库 ID 只写在 `config/schools/<school>.yaml` 的 `official_knowledge_base_id`，不得写入 Router、Handler 或 Provider。详细说明见 `docs/phase-7-agent-orchestrator.md`。
+每所学校的知识库 ID 只写在 `config/schools/<school>.yaml` 的 `official_knowledge_base_id`，不得写入 Router、Handler 或 Provider。
 
 ## Redis Cost Control
 
@@ -104,8 +104,6 @@ ASKU_QUESTION_RATE_LIMIT_PER_MINUTE=30
 - 只有具有官方来源的稳定 Knowledge 答案进入 Answer Cache；混合检索、实时搜索、受控回答和无可靠来源回答不读写 Answer Cache。
 - Redis 故障时 Query/Answer Cache 均 fail-open，不阻断正常检索和生成。
 
-详细规则见 `docs/phase-8-redis-cost-control.md`。
-
 ## Phase 10A Admin & Observability
 
 `GET /v1/admin/overview` 以只读事务聚合用户活跃、留存、问题量、Run 质量、TTFT/总耗时、Token/成本、缓存命中、路由、错误码和每日趋势。接口使用独立 Admin Token，普通用户 Access Token 无权限：
@@ -115,7 +113,7 @@ $headers = @{ Authorization = 'Bearer asku-local-admin-do-not-use-in-production'
 Invoke-RestMethod -Headers $headers 'http://localhost:18080/v1/admin/overview'
 ```
 
-未设置 `ASKU_ADMIN_TOKEN` 时接口隐藏为 404。生产环境必须设置高熵 Token；统计时区由 `ASKU_REPORTING_TIMEZONE` 控制，默认 `Asia/Shanghai`。契约与口径见 `../docs/phase-10a-admin-observability.md`。
+未设置 `ASKU_ADMIN_TOKEN` 时接口隐藏为 404。生产环境必须设置高熵 Token；统计时区由 `ASKU_REPORTING_TIMEZONE` 控制，默认 `Asia/Shanghai`。
 
 ## 测试命令
 
@@ -124,7 +122,5 @@ go test ./...
 go vet ./...
 go test -race ./...
 ```
-
-架构边界和扩展方式见 `../docs/architecture-v0.10.md`，混合 Agent 规则见 `../docs/phase-12-hybrid-agent.md`。
 
 V0.11 启动前必须设置 `ASKU_SCHOOL_CONFIG`，不再从核心代码隐式选择试点学校。Router 的固定时间回归集位于 `evals/routing.yaml`，由 `go test` 和工程评测共同执行。

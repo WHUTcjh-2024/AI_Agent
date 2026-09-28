@@ -131,7 +131,7 @@ npm run export:ios
 
 `npm run lint` 检查本次课表功能、接入文件、测试和生成脚本；`npm run lint:all` 额外扫描历史代码。新引入的 Expo ESLint 配置在旧聊天/历史/来源组件中发现已有问题，未在课表任务内重构它们。全项目 TypeScript 检查仍由 `npm run typecheck` 执行。
 
-完整架构、安全边界、自动测试和真机验收步骤见 [课表开发报告](../../docs/features/timetable.md)；协议依据见 [iwut 研究记录](../../docs/research/iwut-course-reference.md)。
+课表相关测试位于 `tests/timetable*.test.ts`，导入协议实现在 `src/features/timetable/providers/jwapp/`。
 
 ### 单校移植（V0.11）
 

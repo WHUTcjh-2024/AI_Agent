@@ -65,13 +65,17 @@ def package(batch: Path, report: Path, output: Path) -> dict:
             report / "weknora-readiness.json"
         ).read_bytes()
     root = Path(__file__).resolve().parents[2]
-    readme_name = (
-        "knowledge-quality-v5.md"
-        if validation.get("documents_deleted") is not None
-        else "knowledge-quality-v4.md"
-    )
-    readme = root / "docs" / readme_name
-    entries["README.md"] = readme.read_bytes()
+    entries["README.md"] = (
+        "# AskU scoped evidence delivery\n\n"
+        "This package contains only documents and evidence that passed the "
+        "recorded offline acceptance checks. The package manifest lists "
+        "SHA-256 hashes for every included file.\n\n"
+        "The package is not production ready. Before use in live answers, "
+        "verify the source is current, import documents into WeKnora, "
+        "validate retrieval and citations, and enforce school, topic, "
+        "effective date, and admission scope at query time. Do not import "
+        "quarantined or unreviewed records.\n"
+    ).encode("utf-8")
     entries["scope_gate.py"] = (
         root / "asku-knowledge/asku/scoped_evidence.py"
     ).read_bytes()

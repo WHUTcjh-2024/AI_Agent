@@ -51,7 +51,7 @@ docker build -t asku-admin apps/admin
 
 ## 联调
 
-在独立 PostgreSQL/Redis 和 Mock Provider 后端上运行，不向日常数据库写入测试问题。完整启动配置见 [Phase 10B](../../docs/phase-10b-admin-console.md)。在仓库根目录执行：
+在独立 PostgreSQL/Redis 和 Mock Provider 后端上运行，不向日常数据库写入测试问题。在仓库根目录执行：
 
 ```powershell
 $env:ASKU_ADMIN_TEST_PASSWORD = Read-Host '当前控制台口令' -MaskInput
@@ -59,5 +59,3 @@ $env:ASKU_ADMIN_TEST_PASSWORD = Read-Host '当前控制台口令' -MaskInput
 ```
 
 脚本需要 PowerShell 7，默认后端端口 `18081`、控制台端口 `18090`；使用 `-BackendUrl` 和 `-ConsoleUrl` 可调整。脚本只接受 loopback 地址，假定隔离环境没有并发业务请求。默认删除本次测试会话，测试用户仍保留在隔离数据库；`-KeepSession` 可暂留成功会话用于页面检查。报告不含凭证，`expectedProviderConfig` 表示启动环境应满足的约束，不是对 Provider 的远程探测。
-
-详情、指标口径与验收记录见 [Phase 10B](../../docs/phase-10b-admin-console.md)。
