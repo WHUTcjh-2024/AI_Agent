@@ -100,7 +100,7 @@ UI 只依赖 `ChatService` 与标准 `ChatEvent`。当前实现：
 - `ApiSessionManager`：Token 恢复、自动轮换、并发 401 单飞恢复。
 - `ApiAuthService`：用户身份读取边界。
 
-后续接入真实 Agent 时只替换后端能力 Adapter，不需要重写 Screen。详细边界见 `../../docs/frontend-architecture.md`。
+后端 Agent 能力或协议变化时，在服务适配层处理接口映射，不需要重写 Screen。详细边界见 `../../docs/frontend-architecture.md`。
 
 ## Demo Scenarios
 

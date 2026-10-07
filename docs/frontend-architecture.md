@@ -4,7 +4,7 @@
 
 `message.completed.message.citations` 是引用唯一事实源。`ChatMessage` 只把结构化 Citation 交给 `CitationPills`，点击后按 `sourceId` 导航到 Source Detail；禁止从 Markdown 正文正则提取 `[1]`。`sources.updated` 仅用于生成过程和来源预览。
 
-Source Detail 支持官方网页、官方附件和 parent page。内部文件路径不属于前端 Domain，也不允许通过 Mock/API Adapter 传入。
+Source Detail 支持官方网页、官方附件和 parent page。内部文件路径不属于前端 Domain，也不允许通过 API Adapter 传入。
 
 ## Dependency flow
 
@@ -24,7 +24,7 @@ ApiSessionManager   ApiTransport
 TokenStore
 ```
 
-`ServiceProvider` is the mobile composition root. Screens do not read wire JSON, own tokens, or call `fetch`. Mock and API implementations satisfy the same product contracts.
+`ServiceProvider` is the mobile composition root. It wires `ApiChatService` and `ApiAuthService` to the product contracts. Screens do not read wire JSON, own tokens, or call `fetch`.
 
 ## Responsibilities
 
@@ -35,7 +35,7 @@ TokenStore
 - `services/api`: HTTP/SSE wire protocol adapters.
 - `ApiSessionManager`: restore, refresh, login bootstrap and one shared session-mutation single-flight. Only an explicit invalid-refresh response clears credentials; transient network/provider failures preserve the session.
 - `TokenStore`: replaceable secure-storage boundary; AsyncStorage is the current demo adapter.
-- `config/runtime.ts`: validated runtime modes, API URL and app version.
+- `config/runtime.ts`: validated auth mode, API URL and app version.
 
 ## SSE boundary
 
@@ -47,15 +47,13 @@ Unexpected EOF before a terminal event is treated as a reconnectable failure. A 
 
 - Backend PostgreSQL: users, sessions, messages, sources, feedback, runs and SSE event history.
 - Device TokenStore: current session credentials only.
-- Mock adapters: isolated UI regression data only.
 - Controller state: input, streaming buffer, agent state and local feedback response.
 
 ## Replace adapters
 
-- Real backend: keep `ChatService`; replace or extend `ApiChatService` mapping.
+- Backend protocol changes: keep `ChatService`; update `ApiChatService` mapping.
 - Real WeChat: implement the login entry, set `EXPO_PUBLIC_ASKU_AUTH_MODE=wechat`, keep `ApiSessionManager` token lifecycle.
 - Secure credentials: add a `TokenStore` implementation backed by secure storage and change only the composition root.
-- Offline UI regression: set `EXPO_PUBLIC_ASKU_SERVICE_MODE=mock`.
 
 ## Compatibility rules
 
@@ -66,4 +64,4 @@ Unexpected EOF before a terminal event is treated as a reconnectable failure. A 
 
 ## Current boundary
 
-V0.9 completes the citation trust chain and end-to-end integration. Knowledge retrieval is disabled by default, while Search and LLM providers default to explicitly labelled Mock adapters; production must configure real providers before answers can be treated as official policy results. Native iOS archive requires macOS and Xcode.
+V0.9 completes the citation trust chain and end-to-end integration. Knowledge retrieval is disabled by default. The backend requires explicit LLM and Web Search provider configuration; isolated evaluation can select Mock providers. Native iOS archive requires macOS and Xcode.
